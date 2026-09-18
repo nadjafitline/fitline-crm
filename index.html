@@ -25,14 +25,17 @@
         .filter-btn.active { background: #2c3e50; color: white; }
 
         input, select, textarea, button { padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
+        
+        /* Allgemeiner Button (Orange z.B. für Aufgaben) */
         button { background: #e67e22; color: white; border: none; cursor: pointer; font-weight: bold; }
         button:hover { background: #d35400; }
 
         .import-phone-btn { background: #2980b9; margin-bottom: 5px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .import-phone-btn:hover { background: #1f618d; }
 
-        .vcard-btn { background: #27ae60; font-size: 13px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border-radius: 4px; border: none; color: white; font-weight: bold; cursor: pointer; }
-        .vcard-btn:hover { background: #219653; }
+        /* Grüner Button für Speichern / VCF */
+        .save-btn { background: #27ae60; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border-radius: 4px; border: none; color: white; font-weight: bold; cursor: pointer; padding: 10px; }
+        .save-btn:hover { background: #219653; }
 
         .quick-task-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
         .quick-btn { background: #34495e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; width: auto; }
@@ -45,7 +48,6 @@
         
         tr.clickable { cursor: pointer; }
         tr.clickable:hover { background: #f1f8ff; }
-        tr.selected { background: #e3f2fd !important; font-weight: bold; }
 
         .delete-btn { background: #e74c3c; padding: 8px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; width: auto; margin: 0; }
         .delete-btn:hover { background: #c0392b; }
@@ -53,7 +55,12 @@
         .done { text-decoration: line-through; color: #888; }
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #fff; display: inline-block; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
         .date-small { font-size: 10px; color: #666; display: block; margin-top: 2px; }
-        .info-box { background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 10px; }
+
+        /* Modal Pop-up für Kundendetails */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
+        .close-modal { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .close-modal:hover { background: c0392b; }
     </style>
 </head>
 <body>
@@ -87,23 +94,18 @@
             </select>
 
             <textarea id="contactNotes" placeholder="Notizen..." rows="2"></textarea>
-            <button type="submit">Kontakt speichern & ins Handy übernehmen</button>
+            <!-- Grüner einzelner Button -->
+            <button type="submit" class="save-btn">📇 Kontakt speichern & ins Handy übernehmen</button>
         </form>
     </div>
 
     <div class="dashboard">
         
-        <!-- 2. Kundendetails (öffnet sich beim Klick auf einen Kontakt) -->
-        <div class="card" id="detailCard" style="display: none;">
-            <h2>🔍 Kundendetails & Bearbeiten</h2>
-            <div id="clientDetailContent"></div>
-        </div>
-
-        <!-- 3. Aktive Aufgaben & Wiedervorlagen -->
+        <!-- 2. Aktive Aufgaben & Wiedervorlagen -->
         <div class="card">
             <h2>📋 Aktive Aufgaben & Wiedervorlagen</h2>
             
-            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Schnell-Aufgabe für ausgewählten Kunden:</div>
+            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Schnell-Aufgabe für einen Kunden (zuerst in Tabelle anklicken):</div>
             <div class="quick-task-bar">
                 <button class="quick-btn" onclick="addQuickTask(3)">+ 3 Tage</button>
                 <button class="quick-btn" onclick="addQuickTask(7)">+ 7 Tage</button>
@@ -139,13 +141,13 @@
             </div>
         </div>
 
-        <!-- 4. Kontakte, Suche & Filter -->
+        <!-- 3. Kontakte, Suche & Filter -->
         <div class="card">
             <h2>👥 Kontakte & Suche</h2>
             
             <!-- Suchfeld -->
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Nach Namen oder Telefon suchen..." oninput="render()">
+                <input type="text" id="searchInput" placeholder="🔍 Nach Namen, Telefon oder Kanal suchen..." oninput="render()">
             </div>
 
             <div class="filter-bar" id="filterBar">
@@ -177,6 +179,15 @@
     </div>
 </div>
 
+<!-- Modal Pop-up für Kundendetails beim Klick -->
+<div class="modal-overlay" id="contactModal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="closeModal()">X</button>
+        <h2>🔍 Kundendetails & Bearbeiten</h2>
+        <div id="clientDetailContent"></div>
+    </div>
+</div>
+
 <script>
     let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v12')) || [];
     let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v12')) || [];
@@ -188,9 +199,9 @@
     const taskForm = document.getElementById('taskForm');
     const taskTableBody = document.getElementById('taskTableBody');
     const taskClientSelect = document.getElementById('taskClientSelect');
-    const detailCard = document.getElementById('detailCard');
-    const clientDetailContent = document.getElementById('clientDetailContent');
     const searchInput = document.getElementById('searchInput');
+    const contactModal = document.getElementById('contactModal');
+    const clientDetailContent = document.getElementById('clientDetailContent');
 
     function saveData() {
         localStorage.setItem('fitline_crm_contacts_v12', JSON.stringify(contacts));
@@ -204,7 +215,6 @@
         const searchQuery = searchInput.value.toLowerCase().trim();
 
         let filteredContacts = contacts.map((c, originalIndex) => ({ ...c, originalIndex })).filter(c => {
-            // Filter nach Kategorie/Status
             let matchesFilter = true;
             if (currentFilter !== 'all') {
                 if (currentFilter === 'Kunde' || currentFilter === 'Teampartner') {
@@ -214,7 +224,6 @@
                 }
             }
 
-            // Filter nach Suchtext (Name, Telefon oder Kanal)
             let matchesSearch = true;
             if (searchQuery) {
                 const nameMatch = c.name && c.name.toLowerCase().includes(searchQuery);
@@ -234,10 +243,8 @@
             if (c.status === 'Später interessiert') statusColor = '#f39c12';
             if (c.status === 'Kein Interesse') statusColor = '#7f8c8d';
 
-            let isSelected = selectedContactIndex === c.originalIndex ? 'selected' : '';
-
             contactTableBody.innerHTML += `
-                <tr class="clickable ${isSelected}" onclick="selectContact(${c.originalIndex})">
+                <tr class="clickable" onclick="openContact(${c.originalIndex})">
                     <td>
                         <strong>${c.name}</strong>
                         <span class="date-small">${c.createdDate}</span>
@@ -267,12 +274,6 @@
                 </tr>`;
         });
 
-        if (selectedContactIndex !== null && contacts[selectedContactIndex]) {
-            showClientDetails(selectedContactIndex);
-        } else {
-            detailCard.style.display = 'none';
-        }
-
         saveData();
     }
 
@@ -283,31 +284,36 @@
         render();
     }
 
-    function selectContact(index) {
+    function openContact(index) {
         selectedContactIndex = index;
-        render();
-        detailCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    function showClientDetails(index) {
         const c = contacts[index];
-        detailCard.style.display = 'block';
 
         clientDetailContent.innerHTML = `
-            <button class="vcard-btn" onclick="exportVCardData('${c.name}', '${c.phone || ''}', '${c.type}', '${c.status}', '${c.notes || ''}')">📇 Diesen Kontakt ins Handy-Telefonbuch speichern</button>
+            <button class="save-btn" style="margin-bottom: 15px;" onclick="exportVCardData('${c.name}', '${c.phone || ''}', '${c.type}', '${c.status}', '${c.notes || ''}')">📇 Erneut als Handykontakt speichern</button>
 
-            <div class="info-box">
-                <p><strong>Name:</strong> <input type="text" value="${c.name}" onchange="updateContactField(${index}, 'name', this.value)"></p>
-                <p><strong>Kanal:</strong> <input type="text" value="${c.channel || ''}" onchange="updateContactField(${index}, 'channel', this.value)"></p>
-                <p><strong>Telefon / E-Mail:</strong> <input type="text" value="${c.phone || ''}" onchange="updateContactField(${index}, 'phone', this.value)"></p>
-                <p><strong>Typ:</strong> 
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">Name / Firma:</label>
+                    <input type="text" value="${c.name}" onchange="updateContactField(${index}, 'name', this.value)">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">Kanal:</label>
+                    <input type="text" value="${c.channel || ''}" onchange="updateContactField(${index}, 'channel', this.value)">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">Telefon / E-Mail:</label>
+                    <input type="text" value="${c.phone || ''}" onchange="updateContactField(${index}, 'phone', this.value)">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">Typ:</label>
                     <select onchange="updateContactField(${index}, 'type', this.value)">
                         <option value="Kunde" ${c.type === 'Kunde' ? 'selected' : ''}>Kunde</option>
                         <option value="Teampartner" ${c.type === 'Teampartner' ? 'selected' : ''}>Teampartner</option>
                         <option value="Sonstiges" ${c.type === 'Sonstiges' ? 'selected' : ''}>Sonstiges</option>
                     </select>
-                </p>
-                <p><strong>Status:</strong> 
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">Status:</label>
                     <select onchange="updateContactField(${index}, 'status', this.value)">
                         <option value="Unkontaktiert" ${c.status === 'Unkontaktiert' ? 'selected' : ''}>Unkontaktiert</option>
                         <option value="Kontaktiert" ${c.status === 'Kontaktiert' ? 'selected' : ''}>Kontaktiert</option>
@@ -315,15 +321,26 @@
                         <option value="Später interessiert" ${c.status === 'Später interessiert' ? 'selected' : ''}>Später interessiert</option>
                         <option value="Kein Interesse" ${c.status === 'Kein Interesse' ? 'selected' : ''}>Kein Interesse</option>
                     </select>
-                </p>
-                <p><strong>Notizen:</strong><br><textarea rows="3" onchange="updateContactField(${index}, 'notes', this.value)">${c.notes || ''}</textarea></p>
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">Notizen:</label>
+                    <textarea rows="3" onchange="updateContactField(${index}, 'notes', this.value)">${c.notes || ''}</textarea>
+                </div>
             </div>
         `;
+
+        contactModal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        contactModal.style.display = 'none';
+        render();
     }
 
     function updateContactField(index, field, value) {
         contacts[index][field] = value;
-        render();
+        // Wenn sich der Name ändert, auch in Schnellaufgaben markieren falls nötig
+        saveData();
     }
 
     function exportVCardData(name, phone, type, status, notes) {
@@ -375,7 +392,7 @@
 
     function addQuickTask(days) {
         if (selectedContactIndex === null) {
-            alert('Bitte klicke zuerst unten in der Tabelle auf einen Kunden!');
+            alert('Bitte klicke zuerst in der Tabelle auf einen Kunden (oder öffne ihn), um eine Schnell-Aufgabe hinzuzufügen!');
             return;
         }
         const client = contacts[selectedContactIndex];
@@ -390,11 +407,12 @@
             done: false
         });
         render();
+        alert(`Aufgabe für ${client.name} hinzugefügt!`);
     }
 
     function addQuickTaskCustom(text, days) {
         if (selectedContactIndex === null) {
-            alert('Bitte klicke zuerst unten in der Tabelle auf einen Kunden!');
+            alert('Bitte klicke zuerst in der Tabelle auf einen Kunden (oder öffne ihn), um eine Schnell-Aufgabe hinzuzufügen!');
             return;
         }
         const client = contacts[selectedContactIndex];
@@ -409,6 +427,7 @@
             done: false
         });
         render();
+        alert(`Aufgabe für ${client.name} hinzugefügt!`);
     }
 
     contactForm.addEventListener('submit', (e) => {
