@@ -15,7 +15,6 @@
         .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         .contact-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
-        .task-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
         
         .search-box { margin-bottom: 10px; }
         .search-box input { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; }
@@ -26,14 +25,12 @@
 
         input, select, textarea, button { padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
         
-        /* Allgemeiner Button (Orange z.B. für Aufgaben) */
         button { background: #e67e22; color: white; border: none; cursor: pointer; font-weight: bold; }
         button:hover { background: #d35400; }
 
         .import-phone-btn { background: #2980b9; margin-bottom: 5px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .import-phone-btn:hover { background: #1f618d; }
 
-        /* Grüner Button für Speichern / VCF */
         .save-btn { background: #27ae60; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border-radius: 4px; border: none; color: white; font-weight: bold; cursor: pointer; padding: 10px; }
         .save-btn:hover { background: #219653; }
 
@@ -46,21 +43,25 @@
         th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: left; vertical-align: middle; font-size: 12px; }
         th { background: #f8f9fa; color: #2c3e50; }
         
-        tr.clickable { cursor: pointer; }
-        tr.clickable:hover { background: #f1f8ff; }
+        tr.clickable td.client-name-cell { cursor: pointer; color: #2980b9; font-weight: bold; }
+        tr.clickable td.client-name-cell:hover { text-decoration: underline; }
 
         .delete-btn { background: #e74c3c; padding: 8px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; width: auto; margin: 0; }
         .delete-btn:hover { background: #c0392b; }
+
+        .add-task-row-btn { background: #2980b9; padding: 5px 10px; font-size: 11px; border-radius: 4px; color: white; border: none; cursor: pointer; width: auto; }
+        .add-task-row-btn:hover { background: #1f618d; }
         
         .done { text-decoration: line-through; color: #888; }
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #fff; display: inline-block; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
         .date-small { font-size: 10px; color: #666; display: block; margin-top: 2px; }
 
-        /* Modal Pop-up für Kundendetails */
+        /* Modal Pop-up */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
         .modal-content { background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
         .close-modal { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .close-modal:hover { background: c0392b; }
+        .close-modal:hover { background: #c0392b; }
+        .section-box { background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-top: 12px; }
     </style>
 </head>
 <body>
@@ -68,7 +69,7 @@
 <div class="container">
     <h1>FitLine CRM</h1>
 
-    <!-- 1. Neuer Kontakt ganz oben -->
+    <!-- 1. Neuer Kontakt -->
     <div class="card">
         <h2>Neuen Kontakt anlegen</h2>
         
@@ -94,7 +95,6 @@
             </select>
 
             <textarea id="contactNotes" placeholder="Notizen..." rows="2"></textarea>
-            <!-- Grüner einzelner Button -->
             <button type="submit" class="save-btn">📇 Kontakt speichern & ins Handy übernehmen</button>
         </form>
     </div>
@@ -104,27 +104,6 @@
         <!-- 2. Aktive Aufgaben & Wiedervorlagen -->
         <div class="card">
             <h2>📋 Aktive Aufgaben & Wiedervorlagen</h2>
-            
-            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Schnell-Aufgabe für einen Kunden (zuerst in Tabelle anklicken):</div>
-            <div class="quick-task-bar">
-                <button class="quick-btn" onclick="addQuickTask(3)">+ 3 Tage</button>
-                <button class="quick-btn" onclick="addQuickTask(7)">+ 7 Tage</button>
-                <button class="quick-btn" onclick="addQuickTask(14)">+ 14 Tage</button>
-                <button class="quick-btn" onclick="addQuickTaskCustom('Termin vereinbaren', 1)">+ Termin</button>
-                <button class="quick-btn" onclick="addQuickTaskCustom('Party eingeladen', 1)">+ Party</button>
-                <button class="quick-btn" onclick="addQuickTaskCustom('Call eingeladen', 1)">+ Call</button>
-                <button class="quick-btn" onclick="addQuickTaskCustom('Action Pack nachfassen', 3)">+ Action Pack</button>
-            </div>
-
-            <form class="task-form" id="taskForm">
-                <input type="text" id="taskText" placeholder="Aufgabe..." required>
-                <select id="taskClientSelect" required>
-                    <option value="">-- Kunde zuordnen --</option>
-                </select>
-                <input type="date" id="taskDate" required>
-                <button type="submit">+ Aufgabe hinzufügen</button>
-            </form>
-
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -141,11 +120,10 @@
             </div>
         </div>
 
-        <!-- 3. Kontakte, Suche & Filter -->
+        <!-- 3. Kontakte & Suche -->
         <div class="card">
-            <h2>👥 Kontakte & Suche</h2>
+            <h2>👥 Kontakte & Suche (Klick auf Namen = Details | Klick auf +Aufgabe = Task setzen)</h2>
             
-            <!-- Suchfeld -->
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="🔍 Nach Namen, Telefon oder Kanal suchen..." oninput="render()">
             </div>
@@ -169,6 +147,7 @@
                             <th>Typ</th>
                             <th>Status</th>
                             <th>Kanal</th>
+                            <th style="text-align: center;">Aktion</th>
                         </tr>
                     </thead>
                     <tbody id="contactTableBody"></tbody>
@@ -179,11 +158,11 @@
     </div>
 </div>
 
-<!-- Modal Pop-up für Kundendetails beim Klick -->
+<!-- Modal Pop-up für Kundendetails & direkte Aufgaben -->
 <div class="modal-overlay" id="contactModal">
     <div class="modal-content">
         <button class="close-modal" onclick="closeModal()">X</button>
-        <h2>🔍 Kundendetails & Bearbeiten</h2>
+        <h2 id="modalTitle">🔍 Kundendetails & Aufgaben</h2>
         <div id="clientDetailContent"></div>
     </div>
 </div>
@@ -196,12 +175,11 @@
 
     const contactForm = document.getElementById('contactForm');
     const contactTableBody = document.getElementById('contactTableBody');
-    const taskForm = document.getElementById('taskForm');
     const taskTableBody = document.getElementById('taskTableBody');
-    const taskClientSelect = document.getElementById('taskClientSelect');
     const searchInput = document.getElementById('searchInput');
     const contactModal = document.getElementById('contactModal');
     const clientDetailContent = document.getElementById('clientDetailContent');
+    const modalTitle = document.getElementById('modalTitle');
 
     function saveData() {
         localStorage.setItem('fitline_crm_contacts_v12', JSON.stringify(contacts));
@@ -210,7 +188,6 @@
 
     function render() {
         contactTableBody.innerHTML = '';
-        taskClientSelect.innerHTML = '<option value="">-- Kunde zuordnen --</option>';
 
         const searchQuery = searchInput.value.toLowerCase().trim();
 
@@ -244,21 +221,22 @@
             if (c.status === 'Kein Interesse') statusColor = '#7f8c8d';
 
             contactTableBody.innerHTML += `
-                <tr class="clickable" onclick="openContact(${c.originalIndex})">
-                    <td>
+                <tr class="clickable">
+                    <td class="client-name-cell" onclick="openContact(${c.originalIndex})">
                         <strong>${c.name}</strong>
                         <span class="date-small">${c.createdDate}</span>
                     </td>
                     <td><strong>${c.type}</strong></td>
                     <td><span class="badge" style="background-color: ${statusColor};">${c.status}</span></td>
                     <td>${c.channel || '-'}</td>
+                    <td style="text-align: center;">
+                        <button class="add-task-row-btn" onclick="openTaskModal(${c.originalIndex})">+ Aufgabe</button>
+                    </td>
                 </tr>`;
-
-            taskClientSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`;
         });
 
         if (filteredContacts.length === 0) {
-            contactTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888; padding: 15px;">Keine Kontakte gefunden.</td></tr>`;
+            contactTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888; padding: 15px;">Keine Kontakte gefunden.</td></tr>`;
         }
 
         tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -284,9 +262,11 @@
         render();
     }
 
+    // Nur Details anzeigen / bearbeiten (bei Klick auf den Namen)
     function openContact(index) {
         selectedContactIndex = index;
         const c = contacts[index];
+        modalTitle.innerText = "🔍 Kundendetails bearbeiten";
 
         clientDetailContent.innerHTML = `
             <button class="save-btn" style="margin-bottom: 15px;" onclick="exportVCardData('${c.name}', '${c.phone || ''}', '${c.type}', '${c.status}', '${c.notes || ''}')">📇 Erneut als Handykontakt speichern</button>
@@ -332,6 +312,45 @@
         contactModal.style.display = 'flex';
     }
 
+    // Gezieltes Aufgaben-Fenster (bei Klick auf "+ Aufgabe" in der Tabellenzeile)
+    function openTaskModal(index) {
+        selectedContactIndex = index;
+        const c = contacts[index];
+        modalTitle.innerText = `⚡ Aufgabe für ${c.name} erstellen`;
+
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 3);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+        clientDetailContent.innerHTML = `
+            <div style="font-size: 13px; color: #555; margin-bottom: 12px;">Wähle eine Schnell-Aufgabe oder tippe direkt etwas ein:</div>
+            
+            <div class="quick-task-bar">
+                <button class="quick-btn" onclick="addModalTaskDays(3)">+ 3 Tage</button>
+                <button class="quick-btn" onclick="addModalTaskDays(7)">+ 7 Tage</button>
+                <button class="quick-btn" onclick="addModalTaskDays(14)">+ 14 Tage</button>
+                <button class="quick-btn" onclick="addModalTaskCustom('Termin vereinbaren', 1)">+ Termin</button>
+                <button class="quick-btn" onclick="addModalTaskCustom('Party eingeladen', 1)">+ Party</button>
+                <button class="quick-btn" onclick="addModalTaskCustom('Call eingeladen', 1)">+ Call</button>
+                <button class="quick-btn" onclick="addModalTaskCustom('Action Pack nachfassen', 3)">+ Action Pack</button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">Eigene Aufgabe:</label>
+                    <input type="text" id="modalTaskText" placeholder="z. B. Produktunterlagen senden...">
+                </div>
+                <div>
+                    <label style="font-size: 11px; font-weight: bold; color: #555;">Fälligkeitsdatum:</label>
+                    <input type="date" id="modalTaskDate" value="${tomorrowStr}">
+                </div>
+                <button class="save-btn" style="margin-top: 5px;" onclick="addModalCustomTaskSubmit()">Aufgabe speichern</button>
+            </div>
+        `;
+
+        contactModal.style.display = 'flex';
+    }
+
     function closeModal() {
         contactModal.style.display = 'none';
         render();
@@ -339,8 +358,63 @@
 
     function updateContactField(index, field, value) {
         contacts[index][field] = value;
-        // Wenn sich der Name ändert, auch in Schnellaufgaben markieren falls nötig
         saveData();
+    }
+
+    function addModalTaskDays(days) {
+        if (selectedContactIndex === null) return;
+        const client = contacts[selectedContactIndex];
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + days);
+        const dateString = targetDate.toISOString().split('T')[0];
+
+        tasks.push({
+            text: `Nachfassen (${days} Tage)`,
+            clientName: client.name,
+            date: dateString,
+            done: false
+        });
+        closeModal();
+        alert(`Aufgabe (+${days} Tage) für ${client.name} hinzugefügt!`);
+    }
+
+    function addModalTaskCustom(text, days) {
+        if (selectedContactIndex === null) return;
+        const client = contacts[selectedContactIndex];
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + days);
+        const dateString = targetDate.toISOString().split('T')[0];
+
+        tasks.push({
+            text: text,
+            clientName: client.name,
+            date: dateString,
+            done: false
+        });
+        closeModal();
+        alert(`Aufgabe "${text}" für ${client.name} hinzugefügt!`);
+    }
+
+    function addModalCustomTaskSubmit() {
+        if (selectedContactIndex === null) return;
+        const client = contacts[selectedContactIndex];
+        const textInput = document.getElementById('modalTaskText');
+        const dateInput = document.getElementById('modalTaskDate');
+
+        if (!textInput.value.trim() || !dateInput.value) {
+            alert('Bitte Text und Datum eingeben.');
+            return;
+        }
+
+        tasks.push({
+            text: textInput.value,
+            clientName: client.name,
+            date: dateInput.value,
+            done: false
+        });
+
+        closeModal();
+        alert(`Aufgabe für ${client.name} hinzugefügt!`);
     }
 
     function exportVCardData(name, phone, type, status, notes) {
@@ -367,7 +441,7 @@
 
     async function importFromPhoneContacts() {
         if (!('contacts' in navigator && 'ContactsManager' in window)) {
-            alert('Dein Browser unterstützt den direkten Zugriff auf das Telefonbuch leider nicht. (Funktioniert direkt in Chrome auf Android).');
+            alert('Dein Browser unterstützt den direkten Zugriff auf das Telefonbuch leider nicht.');
             return;
         }
         try {
@@ -388,46 +462,6 @@
         } catch (ex) {
             console.log('Fehler beim Auswählen des Kontakts:', ex);
         }
-    }
-
-    function addQuickTask(days) {
-        if (selectedContactIndex === null) {
-            alert('Bitte klicke zuerst in der Tabelle auf einen Kunden (oder öffne ihn), um eine Schnell-Aufgabe hinzuzufügen!');
-            return;
-        }
-        const client = contacts[selectedContactIndex];
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + days);
-        const dateString = targetDate.toISOString().split('T')[0];
-
-        tasks.push({
-            text: `Nachfassen (${days} Tage)`,
-            clientName: client.name,
-            date: dateString,
-            done: false
-        });
-        render();
-        alert(`Aufgabe für ${client.name} hinzugefügt!`);
-    }
-
-    function addQuickTaskCustom(text, days) {
-        if (selectedContactIndex === null) {
-            alert('Bitte klicke zuerst in der Tabelle auf einen Kunden (oder öffne ihn), um eine Schnell-Aufgabe hinzuzufügen!');
-            return;
-        }
-        const client = contacts[selectedContactIndex];
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + days);
-        const dateString = targetDate.toISOString().split('T')[0];
-
-        tasks.push({
-            text: text,
-            clientName: client.name,
-            date: dateString,
-            done: false
-        });
-        render();
-        alert(`Aufgabe für ${client.name} hinzugefügt!`);
     }
 
     contactForm.addEventListener('submit', (e) => {
@@ -452,24 +486,7 @@
         });
 
         exportVCardData(name, phone, type, status, notes);
-
         document.getElementById('contactForm').reset();
-        render();
-    });
-
-    taskForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        tasks.push({
-            text: document.getElementById('taskText').value,
-            clientName: document.getElementById('taskClientSelect').value,
-            date: document.getElementById('taskDate').value,
-            done: false
-        });
-
-        document.getElementById('taskText').value = '';
-        document.getElementById('taskDate').value = '';
-        document.getElementById('taskClientSelect').value = '';
         render();
     });
 
