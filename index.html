@@ -2,71 +2,69 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#2c3e50">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="FitLine CRM">
-    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitLine CRM</title>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1500px; margin: auto; }
-        h1 { color: #2c3e50; margin-top: 0; margin-bottom: 20px; }
-        h2 { color: #2c3e50; font-size: 18px; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 8px; }
-        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 1200px) { .dashboard { grid-template-columns: 1fr; } }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .contact-form { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 15px; }
-        .task-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-        .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-        .filter-btn { background: #e0e0e0; color: #333; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        body { font-family: sans-serif; background: #f4f4f9; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 1200px; margin: auto; }
+        h1 { color: #2c3e50; margin-top: 0; margin-bottom: 15px; font-size: 22px; }
+        h2 { color: #2c3e50; font-size: 16px; margin-top: 0; margin-bottom: 12px; border-bottom: 2px solid #ddd; padding-bottom: 6px; }
+
+        .dashboard { display: flex; flex-direction: column; gap: 15px; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .contact-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+        .task-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+        .filter-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+        .filter-btn { background: #e0e0e0; color: #333; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .filter-btn.active { background: #2c3e50; color: white; }
-        input, select, textarea, button { padding: 9px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
-        button { background: #e67e22; color: white; border: none; cursor: pointer; font-weight: bold; width: auto; }
+
+        input, select, textarea, button { padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
+        button { background: #e67e22; color: white; border: none; cursor: pointer; font-weight: bold; }
         button:hover { background: #d35400; }
+
         .quick-task-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
-        .quick-btn { background: #34495e; color: white; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+        .quick-btn { background: #34495e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; width: auto; }
         .quick-btn:hover { background: #2c3e50; }
+
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        th, td { border: 1px solid #e0e0e0; padding: 10px 8px; text-align: left; vertical-align: middle; font-size: 13px; }
+        th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: left; vertical-align: middle; font-size: 12px; }
         th { background: #f8f9fa; color: #2c3e50; }
+        
         tr.clickable { cursor: pointer; }
         tr.clickable:hover { background: #f1f8ff; }
         tr.selected { background: #e3f2fd !important; font-weight: bold; }
-        .delete-btn { background: #e74c3c; padding: 8px 12px; font-size: 13px; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 15px; }
+
+        .delete-btn { background: #e74c3c; padding: 8px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
         .delete-btn:hover { background: #c0392b; }
+        
         .done { text-decoration: line-through; color: #888; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #fff; display: inline-block; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
-        .date-small { font-size: 11px; color: #666; display: block; margin-top: 3px; }
-        .info-box { background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 12px; }
-        @media (max-width: 800px) {
-            body { padding: 10px; }
-            .card { padding: 14px; }
-            .contact-form { grid-template-columns: 1fr; }
-            h1 { font-size: 24px; }
-            th, td { font-size: 12px; padding: 8px 6px; }
-        }
+        .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #fff; display: inline-block; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+        .date-small { font-size: 10px; color: #666; display: block; margin-top: 2px; }
+        .info-box { background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 10px; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <h1>FitLine CRM</h1>
 
+    <!-- 1. Neuer Kontakt ganz oben -->
     <div class="card">
         <h2>Neuen Kontakt anlegen</h2>
         <form class="contact-form" id="contactForm">
             <input type="text" id="contactName" placeholder="Name / Firma" required>
             <input type="text" id="contactChannel" placeholder="Kanal (Insta, Tel...)">
             <input type="text" id="contactPhone" placeholder="Telefon / E-Mail">
+            
             <select id="contactType">
                 <option value="Kunde">Kunde</option>
                 <option value="Teampartner">Teampartner</option>
                 <option value="Sonstiges">Sonstiges</option>
             </select>
+
             <select id="contactStatus">
                 <option value="Unkontaktiert">Unkontaktiert</option>
                 <option value="Kontaktiert">Kontaktiert</option>
@@ -74,32 +72,15 @@
                 <option value="Später interessiert">Später interessiert</option>
                 <option value="Kein Interesse">Kein Interesse</option>
             </select>
-            <input type="text" id="contactNotes" placeholder="Notizen...">
-            <button type="submit">Speichern</button>
+
+            <textarea id="contactNotes" placeholder="Notizen..." rows="2"></textarea>
+            <button type="submit">Kontakt speichern</button>
         </form>
     </div>
 
     <div class="dashboard">
-        <div class="card">
-            <h2>👥 Kontakte & Filter</h2>
-            <div class="filter-bar" id="filterBar">
-                <button class="filter-btn active" onclick="setFilter('all', this)">Alle</button>
-                <button class="filter-btn" onclick="setFilter('Unkontaktiert', this)">Unkontaktiert</button>
-                <button class="filter-btn" onclick="setFilter('Kontaktiert', this)">Kontaktiert</button>
-                <button class="filter-btn" onclick="setFilter('Interessiert', this)">Interessiert</button>
-                <button class="filter-btn" onclick="setFilter('Später interessiert', this)">Später interessiert</button>
-                <button class="filter-btn" onclick="setFilter('Kein Interesse', this)">Kein Interesse</button>
-                <button class="filter-btn" onclick="setFilter('Kunde', this)">Kunden</button>
-                <button class="filter-btn" onclick="setFilter('Teampartner', this)">Teampartner</button>
-            </div>
-            <div class="table-responsive">
-                <table>
-                    <thead><tr><th>Name / Firma</th><th>Typ</th><th>Status</th><th>Kanal</th></tr></thead>
-                    <tbody id="contactTableBody"></tbody>
-                </table>
-            </div>
-        </div>
-
+        
+        <!-- 2. Aktive Aufgaben & Details in der Mitte -->
         <div>
             <div class="card" id="detailCard" style="display: none;">
                 <h2>🔍 Kundendetails & Bearbeiten</h2>
@@ -108,200 +89,294 @@
 
             <div class="card">
                 <h2>📋 Aktive Aufgaben & Wiedervorlagen</h2>
+                
                 <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Schnell-Aufgabe für ausgewählten Kunden:</div>
                 <div class="quick-task-bar">
-                    <button class="quick-btn" onclick="addQuickTask(3)">+ Nachfassen 3T</button>
-                    <button class="quick-btn" onclick="addQuickTask(7)">+ Nachfassen 7T</button>
-                    <button class="quick-btn" onclick="addQuickTask(14)">+ Nachfassen 14T</button>
+                    <button class="quick-btn" onclick="addQuickTask(3)">+ 3 Tage</button>
+                    <button class="quick-btn" onclick="addQuickTask(7)">+ 7 Tage</button>
+                    <button class="quick-btn" onclick="addQuickTask(14)">+ 14 Tage</button>
                     <button class="quick-btn" onclick="addQuickTaskCustom('Termin vereinbaren', 1)">+ Termin</button>
                     <button class="quick-btn" onclick="addQuickTaskCustom('Party eingeladen', 1)">+ Party</button>
                     <button class="quick-btn" onclick="addQuickTaskCustom('Call eingeladen', 1)">+ Call</button>
                     <button class="quick-btn" onclick="addQuickTaskCustom('Action Pack nachfassen', 3)">+ Action Pack</button>
-                    <button class="quick-btn" onclick="addQuickTaskCustom('Onboarding abschließen', 1)">+ Onboarding</button>
                 </div>
+
                 <form class="task-form" id="taskForm">
                     <input type="text" id="taskText" placeholder="Aufgabe..." required>
-                    <select id="taskClientSelect" required><option value="">-- Kunde zuordnen --</option></select>
+                    <select id="taskClientSelect" required>
+                        <option value="">-- Kunde zuordnen --</option>
+                    </select>
                     <input type="date" id="taskDate" required>
                     <button type="submit">+ Aufgabe hinzufügen</button>
                 </form>
+
                 <div class="table-responsive">
                     <table>
-                        <thead><tr><th style="width:30px;text-align:center;">✓</th><th>Aufgabe</th><th>Kunde</th><th>Fällig</th><th style="width:40px;">X</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th style="width: 25px; text-align: center;">✓</th>
+                                <th>Aufgabe</th>
+                                <th>Kunde</th>
+                                <th>Fällig</th>
+                                <th style="width: 35px;">X</th>
+                            </tr>
+                        </thead>
                         <tbody id="taskTableBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <!-- 3. Kontakte & Filter ganz unten -->
+        <div class="card">
+            <h2>👥 Kontakte & Filter</h2>
+            
+            <div class="filter-bar" id="filterBar">
+                <button class="filter-btn active" onclick="setFilter('all')">Alle</button>
+                <button class="filter-btn" onclick="setFilter('Unkontaktiert')">Unkontaktiert</button>
+                <button class="filter-btn" onclick="setFilter('Kontaktiert')">Kontaktiert</button>
+                <button class="filter-btn" onclick="setFilter('Interessiert')">Interessiert</button>
+                <button class="filter-btn" onclick="setFilter('Später interessiert')">Später</button>
+                <button class="filter-btn" onclick="setFilter('Kein Interesse')">Kein Interesse</button>
+                <button class="filter-btn" onclick="setFilter('Kunde')">Kunden</button>
+                <button class="filter-btn" onclick="setFilter('Teampartner')">Teampartner</button>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name / Firma</th>
+                            <th>Typ</th>
+                            <th>Status</th>
+                            <th>Kanal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 
 <script>
-let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v8')) || [];
-let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v8')) || [];
-let currentFilter = 'all';
-let selectedContactIndex = null;
+    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v9')) || [];
+    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v9')) || [];
+    let currentFilter = 'all';
+    let selectedContactIndex = null;
 
-const contactForm = document.getElementById('contactForm');
-const contactTableBody = document.getElementById('contactTableBody');
-const taskForm = document.getElementById('taskForm');
-const taskTableBody = document.getElementById('taskTableBody');
-const taskClientSelect = document.getElementById('taskClientSelect');
-const detailCard = document.getElementById('detailCard');
-const clientDetailContent = document.getElementById('clientDetailContent');
+    const contactForm = document.getElementById('contactForm');
+    const contactTableBody = document.getElementById('contactTableBody');
+    const taskForm = document.getElementById('taskForm');
+    const taskTableBody = document.getElementById('taskTableBody');
+    const taskClientSelect = document.getElementById('taskClientSelect');
+    const detailCard = document.getElementById('detailCard');
+    const clientDetailContent = document.getElementById('clientDetailContent');
 
-function esc(value) {
-    return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-}
+    function render() {
+        contactTableBody.innerHTML = '';
+        taskClientSelect.innerHTML = '<option value="">-- Kunde zuordnen --</option>';
 
-function render() {
-    contactTableBody.innerHTML = '';
-    taskClientSelect.innerHTML = '<option value="">-- Kunde zuordnen --</option>';
+        let filteredContacts = contacts.map((c, originalIndex) => ({ ...c, originalIndex })).filter(c => {
+            if (currentFilter === 'all') return true;
+            if (currentFilter === 'Kunde' || currentFilter === 'Teampartner') return c.type === currentFilter;
+            return c.status === currentFilter;
+        });
 
-    let filteredContacts = contacts.map((c, originalIndex) => ({...c, originalIndex})).filter(c => {
-        if (currentFilter === 'all') return true;
-        if (currentFilter === 'Kunde' || currentFilter === 'Teampartner') return c.type === currentFilter;
-        return c.status === currentFilter;
-    });
+        filteredContacts.forEach((c) => {
+            let statusColor = '#95a5a6';
+            if (c.status === 'Unkontaktiert') statusColor = '#e67e22';
+            if (c.status === 'Kontaktiert') statusColor = '#3498db';
+            if (c.status === 'Interessiert') statusColor = '#27ae60';
+            if (c.status === 'Später interessiert') statusColor = '#f39c12';
+            if (c.status === 'Kein Interesse') statusColor = '#7f8c8d';
 
-    filteredContacts.forEach(c => {
-        let statusColor = '#95a5a6';
-        if (c.status === 'Unkontaktiert') statusColor = '#e67e22';
-        if (c.status === 'Kontaktiert') statusColor = '#3498db';
-        if (c.status === 'Interessiert') statusColor = '#27ae60';
-        if (c.status === 'Später interessiert') statusColor = '#f39c12';
-        if (c.status === 'Kein Interesse') statusColor = '#7f8c8d';
+            let isSelected = selectedContactIndex === c.originalIndex ? 'selected' : '';
 
-        let isSelected = selectedContactIndex === c.originalIndex ? 'selected' : '';
-        contactTableBody.innerHTML += `
-            <tr class="clickable ${isSelected}" onclick="selectContact(${c.originalIndex})">
-                <td><strong>${esc(c.name)}</strong><span class="date-small">${esc(c.createdDate)}</span></td>
-                <td><strong>${esc(c.type)}</strong></td>
-                <td><span class="badge" style="background-color:${statusColor};">${esc(c.status)}</span></td>
-                <td>${esc(c.channel || '-')}</td>
-            </tr>`;
-        taskClientSelect.innerHTML += `<option value="${esc(c.name)}">${esc(c.name)}</option>`;
-    });
+            contactTableBody.innerHTML += `
+                <tr class="clickable ${isSelected}" onclick="selectContact(${c.originalIndex})">
+                    <td>
+                        <strong>${c.name}</strong>
+                        <span class="date-small">${c.createdDate}</span>
+                    </td>
+                    <td><strong>${c.type}</strong></td>
+                    <td><span class="badge" style="background-color: ${statusColor};">${c.status}</span></td>
+                    <td>${c.channel || '-'}</td>
+                </tr>`;
 
-    if (filteredContacts.length === 0)
-        contactTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">Keine Kontakte für diesen Filter gefunden.</td></tr>';
+            taskClientSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+        });
 
-    tasks.sort((a,b) => new Date(a.date) - new Date(b.date));
-    taskTableBody.innerHTML = '';
-    tasks.forEach((t,index) => {
-        taskTableBody.innerHTML += `
-            <tr>
-                <td style="text-align:center;"><input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask(${index})" style="transform:scale(1.2);"></td>
-                <td class="${t.done ? 'done' : ''}">${esc(t.text)}</td>
-                <td><strong>${esc(t.clientName)}</strong></td>
-                <td class="${t.done ? 'done' : ''}">${esc(t.date)}</td>
-                <td><button class="delete-btn" style="width:auto;padding:4px 8px;margin:0;" onclick="deleteTask(${index})">X</button></td>
-            </tr>`;
-    });
+        if (filteredContacts.length === 0) {
+            contactTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888; padding: 15px;">Keine Kontakte gefunden.</td></tr>`;
+        }
 
-    if (selectedContactIndex !== null && contacts[selectedContactIndex]) showClientDetails(selectedContactIndex);
-    else detailCard.style.display = 'none';
+        tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+        taskTableBody.innerHTML = '';
+        tasks.forEach((t, index) => {
+            taskTableBody.innerHTML += `
+                <tr>
+                    <td style="text-align: center;"><input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask(${index})" style="transform: scale(1.1);"></td>
+                    <td class="${t.done ? 'done' : ''}">${t.text}</td>
+                    <td><strong>${t.clientName}</strong></td>
+                    <td class="${t.done ? 'done' : ''}">${t.date}</td>
+                    <td><button class="delete-btn" style="width: auto; padding: 3px 6px; margin:0;" onclick="deleteTask(${index})">X</button></td>
+                </tr>`;
+        });
 
-    localStorage.setItem('fitline_crm_contacts_v8', JSON.stringify(contacts));
-    localStorage.setItem('fitline_crm_tasks_v8', JSON.stringify(tasks));
-}
+        if (selectedContactIndex !== null && contacts[selectedContactIndex]) {
+            showClientDetails(selectedContactIndex);
+        } else {
+            detailCard.style.display = 'none';
+        }
 
-function setFilter(filter, btn) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    render();
-}
-
-function selectContact(index) { selectedContactIndex = index; render(); }
-
-function showClientDetails(index) {
-    const c = contacts[index];
-    detailCard.style.display = 'block';
-    clientDetailContent.innerHTML = `
-        <div class="info-box">
-            <p><strong>Name:</strong> <input type="text" value="${esc(c.name)}" onchange="updateContactField(${index},'name',this.value)"></p>
-            <p><strong>Kanal:</strong> <input type="text" value="${esc(c.channel || '')}" onchange="updateContactField(${index},'channel',this.value)"></p>
-            <p><strong>Telefon / E-Mail:</strong> <input type="text" value="${esc(c.phone || '')}" onchange="updateContactField(${index},'phone',this.value)"></p>
-            <p><strong>Typ:</strong><select onchange="updateContactField(${index},'type',this.value)">
-                <option value="Kunde" ${c.type === 'Kunde' ? 'selected' : ''}>Kunde</option>
-                <option value="Teampartner" ${c.type === 'Teampartner' ? 'selected' : ''}>Teampartner</option>
-                <option value="Sonstiges" ${c.type === 'Sonstiges' ? 'selected' : ''}>Sonstiges</option>
-            </select></p>
-            <p><strong>Status:</strong><select onchange="updateContactField(${index},'status',this.value)">
-                <option value="Unkontaktiert" ${c.status === 'Unkontaktiert' ? 'selected' : ''}>Unkontaktiert</option>
-                <option value="Kontaktiert" ${c.status === 'Kontaktiert' ? 'selected' : ''}>Kontaktiert</option>
-                <option value="Interessiert" ${c.status === 'Interessiert' ? 'selected' : ''}>Interessiert</option>
-                <option value="Später interessiert" ${c.status === 'Später interessiert' ? 'selected' : ''}>Später interessiert</option>
-                <option value="Kein Interesse" ${c.status === 'Kein Interesse' ? 'selected' : ''}>Kein Interesse</option>
-            </select></p>
-            <p><strong>Notizen:</strong><br><textarea rows="3" onchange="updateContactField(${index},'notes',this.value)">${esc(c.notes || '')}</textarea></p>
-        </div>
-        <button class="delete-btn" onclick="deleteContact(${index})">🗑️ Diesen Kunden unwiderruflich löschen</button>`;
-}
-
-function updateContactField(index, field, value) { contacts[index][field] = value; render(); }
-
-function addQuickTask(days) {
-    if (selectedContactIndex === null) { alert('Bitte klicke zuerst links in der Tabelle auf den Kunden.'); return; }
-    const client = contacts[selectedContactIndex], targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + days);
-    tasks.push({text:`Nachfassen (${days} Tage)`, clientName:client.name, date:targetDate.toISOString().split('T')[0], done:false});
-    render();
-}
-
-function addQuickTaskCustom(text, days) {
-    if (selectedContactIndex === null) { alert('Bitte klicke zuerst links in der Tabelle auf den Kunden.'); return; }
-    const client = contacts[selectedContactIndex], targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + days);
-    tasks.push({text, clientName:client.name, date:targetDate.toISOString().split('T')[0], done:false});
-    render();
-}
-
-contactForm.addEventListener('submit', e => {
-    e.preventDefault();
-    contacts.push({
-        name: document.getElementById('contactName').value,
-        channel: document.getElementById('contactChannel').value,
-        phone: document.getElementById('contactPhone').value,
-        type: document.getElementById('contactType').value,
-        status: document.getElementById('contactStatus').value,
-        notes: document.getElementById('contactNotes').value,
-        createdDate: new Date().toLocaleDateString('de-DE')
-    });
-    contactForm.reset(); render();
-});
-
-taskForm.addEventListener('submit', e => {
-    e.preventDefault();
-    tasks.push({
-        text: document.getElementById('taskText').value,
-        clientName: document.getElementById('taskClientSelect').value,
-        date: document.getElementById('taskDate').value,
-        done: false
-    });
-    document.getElementById('taskText').value = '';
-    document.getElementById('taskDate').value = '';
-    document.getElementById('taskClientSelect').value = '';
-    render();
-});
-
-function deleteContact(index) {
-    if (confirm('Möchtest du diesen Kontakt wirklich löschen?')) {
-        const clientName = contacts[index].name;
-        contacts.splice(index,1);
-        tasks = tasks.filter(t => t.clientName !== clientName);
-        selectedContactIndex = null; render();
+        localStorage.setItem('fitline_crm_contacts_v9', JSON.stringify(contacts));
+        localStorage.setItem('fitline_crm_tasks_v9', JSON.stringify(tasks));
     }
-}
-function deleteTask(index) { tasks.splice(index,1); render(); }
-function toggleTask(index) { tasks[index].done = !tasks[index].done; render(); }
 
-render();
+    function setFilter(filter) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        render();
+    }
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error));
-}
+    function selectContact(index) {
+        selectedContactIndex = index;
+        render();
+    }
+
+    function showClientDetails(index) {
+        const c = contacts[index];
+        detailCard.style.display = 'block';
+
+        clientDetailContent.innerHTML = `
+            <div class="info-box">
+                <p><strong>Name:</strong> <input type="text" value="${c.name}" onchange="updateContactField(${index}, 'name', this.value)"></p>
+                <p><strong>Kanal:</strong> <input type="text" value="${c.channel || ''}" onchange="updateContactField(${index}, 'channel', this.value)"></p>
+                <p><strong>Telefon / E-Mail:</strong> <input type="text" value="${c.phone || ''}" onchange="updateContactField(${index}, 'phone', this.value)"></p>
+                <p><strong>Typ:</strong> 
+                    <select onchange="updateContactField(${index}, 'type', this.value)">
+                        <option value="Kunde" ${c.type === 'Kunde' ? 'selected' : ''}>Kunde</option>
+                        <option value="Teampartner" ${c.type === 'Teampartner' ? 'selected' : ''}>Teampartner</option>
+                        <option value="Sonstiges" ${c.type === 'Sonstiges' ? 'selected' : ''}>Sonstiges</option>
+                    </select>
+                </p>
+                <p><strong>Status:</strong> 
+                    <select onchange="updateContactField(${index}, 'status', this.value)">
+                        <option value="Unkontaktiert" ${c.status === 'Unkontaktiert' ? 'selected' : ''}>Unkontaktiert</option>
+                        <option value="Kontaktiert" ${c.status === 'Kontaktiert' ? 'selected' : ''}>Kontaktiert</option>
+                        <option value="Interessiert" ${c.status === 'Interessiert' ? 'selected' : ''}>Interessiert</option>
+                        <option value="Später interessiert" ${c.status === 'Später interessiert' ? 'selected' : ''}>Später interessiert</option>
+                        <option value="Kein Interesse" ${c.status === 'Kein Interesse' ? 'selected' : ''}>Kein Interesse</option>
+                    </select>
+                </p>
+                <p><strong>Notizen:</strong><br><textarea rows="3" onchange="updateContactField(${index}, 'notes', this.value)">${c.notes || ''}</textarea></p>
+            </div>
+            <button class="delete-btn" onclick="deleteContact(${index})">🗑️ Diesen Kunden löschen</button>
+        `;
+    }
+
+    function updateContactField(index, field, value) {
+        contacts[index][field] = value;
+        render();
+    }
+
+    function addQuickTask(days) {
+        if (selectedContactIndex === null) {
+            alert('Bitte klicke zuerst unten in der Tabelle auf einen Kunden!');
+            return;
+        }
+        const client = contacts[selectedContactIndex];
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + days);
+        const dateString = targetDate.toISOString().split('T')[0];
+
+        tasks.push({
+            text: `Nachfassen (${days} Tage)`,
+            clientName: client.name,
+            date: dateString,
+            done: false
+        });
+        render();
+    }
+
+    function addQuickTaskCustom(text, days) {
+        if (selectedContactIndex === null) {
+            alert('Bitte klicke zuerst unten in der Tabelle auf einen Kunden!');
+            return;
+        }
+        const client = contacts[selectedContactIndex];
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + days);
+        const dateString = targetDate.toISOString().split('T')[0];
+
+        tasks.push({
+            text: text,
+            clientName: client.name,
+            date: dateString,
+            done: false
+        });
+        render();
+    }
+
+    contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const today = new Date().toLocaleDateString('de-DE');
+
+        contacts.push({
+            name: document.getElementById('contactName').value,
+            channel: document.getElementById('contactChannel').value,
+            phone: document.getElementById('contactPhone').value,
+            type: document.getElementById('contactType').value,
+            status: document.getElementById('contactStatus').value,
+            notes: document.getElementById('contactNotes').value,
+            createdDate: today
+        });
+
+        document.getElementById('contactForm').reset();
+        render();
+    });
+
+    taskForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        tasks.push({
+            text: document.getElementById('taskText').value,
+            clientName: document.getElementById('taskClientSelect').value,
+            date: document.getElementById('taskDate').value,
+            done: false
+        });
+
+        document.getElementById('taskText').value = '';
+        document.getElementById('taskDate').value = '';
+        document.getElementById('taskClientSelect').value = '';
+        render();
+    });
+
+    function deleteContact(index) {
+        if (confirm('Möchtest du diesen Kontakt wirklich löschen?')) {
+            const clientName = contacts[index].name;
+            contacts.splice(index, 1);
+            tasks = tasks.filter(t => t.clientName !== clientName);
+            selectedContactIndex = null;
+            render();
+        }
+    }
+
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+        render();
+    }
+
+    function toggleTask(index) {
+        tasks[index].done = !tasks[index].done;
+        render();
+    }
+
+    render();
 </script>
+
 </body>
 </html>
