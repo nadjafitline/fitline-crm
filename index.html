@@ -339,10 +339,10 @@
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px;">
                     <div style="font-size: 11px; font-weight: bold; color: #555;">Oder eigene Aufgabe manuell eintragen:</div>
                     <div>
-                        <input type="text" id="customTaskText" placeholder="z. B. Unterlagen senden...">
+                        <input type="text" id="modalTaskText" placeholder="z. B. Unterlagen senden...">
                     </div>
                     <div>
-                        <input type="date" id="customTaskDate" value="${tomorrowStr}">
+                        <input type="date" id="modalTaskDate" value="${tomorrowStr}">
                     </div>
                     <button type="button" class="save-btn" onclick="addModalCustomTaskSubmit()">Aufgabe speichern</button>
                 </div>
@@ -384,8 +384,8 @@
     function addModalCustomTaskSubmit() {
         if (selectedContactIndex === null) return;
         const client = contacts[selectedContactIndex];
-        const textInput = document.getElementById('customTaskText');
-        const dateInput = document.getElementById('customTaskDate');
+        const textInput = document.getElementById('modalTaskText');
+        const dateInput = document.getElementById('modalTaskDate');
 
         let taskDate = dateInput ? dateInput.value : '';
         if (!taskDate) {
