@@ -83,6 +83,12 @@
             </select>
 
             <textarea id="contactNotes" placeholder="Notizen..." rows="2"></textarea>
+            
+            <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; margin-top: 5px; cursor: pointer;">
+                <input type="checkbox" id="autoExportVCard" checked style="width: auto;"> 
+                <span>Direkt als Handy-Kontakt (vCard) herunterladen</span>
+            </label>
+
             <button type="submit">Kontakt speichern</button>
         </form>
     </div>
@@ -265,8 +271,7 @@
         detailCard.style.display = 'block';
 
         clientDetailContent.innerHTML = `
-            <!-- Gut sichtbarer grüner Button direkt oben in den Details -->
-            <button class="vcard-btn" onclick="exportVCard(${index})">📇 Diesen Kontakt ins Handy-Telefonbuch speichern</button>
+            <button class="vcard-btn" onclick="exportVCardData('${c.name}', '${c.phone || ''}', '${c.type}', '${c.status}', '${c.notes || ''}')">📇 Diesen Kontakt als Handy-Datei (.vcf) speichern</button>
 
             <div class="info-box">
                 <p><strong>Name:</strong> <input type="text" value="${c.name}" onchange="updateContactField(${index}, 'name', this.value)"></p>
@@ -300,16 +305,15 @@
         render();
     }
 
-    // vCard-Export für das echte Telefonbuch (Android & iPhone)
-    function exportVCard(index) {
-        const c = contacts[index];
+    // Hilfsfunktion zum Generieren und Herunterladen der vCard-Datei
+    function exportVCardData(name, phone, type, status, notes) {
         const vcard = [
             'BEGIN:VCARD',
             'VERSION:3.0',
-            `FN:${c.name}`,
-            `N:;${c.name};;;`,
-            `TEL;TYPE=CELL:${c.phone || ''}`,
-            `NOTE:FitLine CRM - ${c.type} (${c.status}) ${c.notes || ''}`,
+            `FN:${name}`,
+            `N:;${name};;;`,
+            `TEL;TYPE=CELL:${phone}`,
+            `NOTE:FitLine CRM - ${type} (${status}) ${notes}`,
             'END:VCARD'
         ].join('\n');
 
@@ -317,7 +321,7 @@
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;
-        anchor.download = `${c.name.replace(/[^a-zA-Z0-9]/g, '_')}.vcf`;
+        anchor.download = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.vcf`;
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
@@ -390,18 +394,32 @@
     contactForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const today = new Date().toLocaleDateString('de-DE');
+        
+        const name = document.getElementById('contactName').value;
+        const channel = document.getElementById('contactChannel').value;
+        const phone = document.getElementById('contactPhone').value;
+        const type = document.getElementById('contactType').value;
+        const status = document.getElementById('contactStatus').value;
+        const notes = document.getElementById('contactNotes').value;
+        const autoExport = document.getElementById('autoExportVCard').checked;
 
         contacts.push({
-            name: document.getElementById('contactName').value,
-            channel: document.getElementById('contactChannel').value,
-            phone: document.getElementById('contactPhone').value,
-            type: document.getElementById('contactType').value,
-            status: document.getElementById('contactStatus').value,
-            notes: document.getElementById('contactNotes').value,
+            name: name,
+            channel: channel,
+            phone: phone,
+            type: type,
+            status: status,
+            notes: notes,
             createdDate: today
         });
 
+        // Wenn die Checkbox aktiv ist, wird beim Speichern sofort die vCard heruntergeladen
+        if (autoExport) {
+            exportVCardData(name, phone, type, status, notes);
+        }
+
         document.getElementById('contactForm').reset();
+        document.getElementById('autoExportVCard').checked = true; // Checkbox wieder aktivieren
         render();
     });
 
@@ -409,7 +427,7 @@
         e.preventDefault();
 
         tasks.push({
-            text: document.getElementById('taskText').value,
+            text: document.getElementById('taskText',).value,
             clientName: document.getElementById('taskClientSelect').value,
             date: document.getElementById('taskDate').value,
             done: false
