@@ -362,7 +362,6 @@
         saveData();
     }
 
-    // Sofortiges Speichern bei Klick auf einen der Schnell-Buttons (+ 3 Tage etc.)
     function addQuickTaskDirect(text, days) {
         if (selectedContactIndex === null) return;
         const client = contacts[selectedContactIndex];
@@ -379,7 +378,7 @@
         });
 
         saveData();
-        openContact(selectedContactIndex); // Aktualisiert das Modal sofort, damit die Aufgabe direkt sichtbar ist
+        openContact(selectedContactIndex);
     }
 
     function addModalCustomTaskSubmit() {
@@ -388,20 +387,28 @@
         const textInput = document.getElementById('modalTaskText');
         const dateInput = document.getElementById('modalTaskDate');
 
-        if (!textInput.value.trim() || !dateInput.value) {
-            alert('Bitte Text und Datum eingeben.');
+        // Fallback: Falls das Datumsfeld leer geblieben ist, nimm standardmäßig in 3 Tagen
+        let taskDate = dateInput.value;
+        if (!taskDate) {
+            const fallbackDate = new Date();
+            fallbackDate.setDate(fallbackDate.getDate() + 3);
+            taskDate = fallbackDate.toISOString().split('T')[0];
+        }
+
+        if (!textInput.value.trim()) {
+            alert('Bitte einen Text für die Aufgabe eingeben.');
             return;
         }
 
         tasks.push({
             text: textInput.value,
             clientName: client.name,
-            date: dateInput.value,
+            date: taskDate,
             done: false
         });
 
         saveData();
-        openContact(selectedContactIndex); // Aktualisiert das Modal direkt
+        openContact(selectedContactIndex);
     }
 
     function exportVCardData(name, phone, type, status, notes) {
@@ -457,7 +464,7 @@
         
         const name = document.getElementById('contactName').value;
         const channel = document.getElementById('contactChannel').value;
-        const phone = document.getElementById('contactPhone').value;
+        const phone = document.getElementById('contactPhone'].value;
         const type = document.getElementById('contactType').value;
         const status = document.getElementById('contactStatus').value;
         const notes = document.getElementById('contactNotes').value;
