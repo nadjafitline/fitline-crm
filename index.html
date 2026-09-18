@@ -387,7 +387,6 @@
         const textInput = document.getElementById('modalTaskText');
         const dateInput = document.getElementById('modalTaskDate');
 
-        // Fallback: Falls das Datumsfeld leer geblieben ist, nimm standardmäßig in 3 Tagen
         let taskDate = dateInput.value;
         if (!taskDate) {
             const fallbackDate = new Date();
@@ -464,7 +463,7 @@
         
         const name = document.getElementById('contactName').value;
         const channel = document.getElementById('contactChannel').value;
-        const phone = document.getElementById('contactPhone'].value;
+        const phone = document.getElementById('contactPhone').value; // Korrigiert
         const type = document.getElementById('contactType').value;
         const status = document.getElementById('contactStatus').value;
         const notes = document.getElementById('contactNotes').value;
