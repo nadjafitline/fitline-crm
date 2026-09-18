@@ -27,7 +27,7 @@
         .import-phone-btn { background: #2980b9; margin-bottom: 5px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .import-phone-btn:hover { background: #1f618d; }
 
-        .vcard-btn { background: #27ae60; font-size: 12px; padding: 8px; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .vcard-btn { background: #27ae60; font-size: 13px; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border-radius: 4px; border: none; color: white; font-weight: bold; cursor: pointer; }
         .vcard-btn:hover { background: #219653; }
 
         .quick-task-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -170,8 +170,8 @@
 </div>
 
 <script>
-    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v11')) || [];
-    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v11')) || [];
+    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v12')) || [];
+    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v12')) || [];
     let currentFilter = 'all';
     let selectedContactIndex = null;
 
@@ -184,8 +184,8 @@
     const clientDetailContent = document.getElementById('clientDetailContent');
 
     function saveData() {
-        localStorage.setItem('fitline_crm_contacts_v11', JSON.stringify(contacts));
-        localStorage.setItem('fitline_crm_tasks_v11', JSON.stringify(tasks));
+        localStorage.setItem('fitline_crm_contacts_v12', JSON.stringify(contacts));
+        localStorage.setItem('fitline_crm_tasks_v12', JSON.stringify(tasks));
     }
 
     function render() {
@@ -265,6 +265,9 @@
         detailCard.style.display = 'block';
 
         clientDetailContent.innerHTML = `
+            <!-- Gut sichtbarer grüner Button direkt oben in den Details -->
+            <button class="vcard-btn" onclick="exportVCard(${index})">📇 Diesen Kontakt ins Handy-Telefonbuch speichern</button>
+
             <div class="info-box">
                 <p><strong>Name:</strong> <input type="text" value="${c.name}" onchange="updateContactField(${index}, 'name', this.value)"></p>
                 <p><strong>Kanal:</strong> <input type="text" value="${c.channel || ''}" onchange="updateContactField(${index}, 'channel', this.value)"></p>
@@ -288,8 +291,6 @@
                 <p><strong>Notizen:</strong><br><textarea rows="3" onchange="updateContactField(${index}, 'notes', this.value)">${c.notes || ''}</textarea></p>
             </div>
             
-            <!-- Button um den Kontakt direkt ins echte Handy-Telefonbuch zu exportieren -->
-            <button class="vcard-btn" onclick="exportVCard(${index})">📇 Als Handy-Kontakt speichern</button>
             <button class="delete-btn" onclick="deleteContact(${index})">🗑️ Diesen Kunden löschen</button>
         `;
     }
