@@ -24,15 +24,15 @@
         button { background: #e67e22; color: white; border: none; cursor: pointer; font-weight: bold; }
         button:hover { background: #d35400; }
 
+        .import-phone-btn { background: #2980b9; margin-bottom: 5px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .import-phone-btn:hover { background: #1f618d; }
+
+        .vcard-btn { background: #27ae60; font-size: 12px; padding: 8px; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .vcard-btn:hover { background: #219653; }
+
         .quick-task-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
         .quick-btn { background: #34495e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; width: auto; }
         .quick-btn:hover { background: #2c3e50; }
-
-        .backup-bar { display: flex; gap: 8px; margin-bottom: 15px; }
-        .backup-btn { background: #27ae60; font-size: 12px; padding: 8px; flex: 1; }
-        .backup-btn:hover { background: #219653; }
-        .restore-btn { background: #2980b9; font-size: 12px; padding: 8px; flex: 1; }
-        .restore-btn:hover { background: #1f618d; }
 
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
@@ -57,16 +57,12 @@
 <div class="container">
     <h1>FitLine CRM</h1>
 
-    <!-- Backup & Restore Leiste -->
-    <div class="backup-bar">
-        <button class="backup-btn" onclick="exportBackup()">💾 Backup herunterladen</button>
-        <button class="restore-btn" onclick="document.getElementById('restoreFile').click()">📂 Backup wiederherstellen</button>
-        <input type="file" id="restoreFile" style="display: none;" accept=".json" onchange="importBackup(event)">
-    </div>
-
     <!-- 1. Neuer Kontakt ganz oben -->
     <div class="card">
         <h2>Neuen Kontakt anlegen</h2>
+        
+        <button type="button" class="import-phone-btn" onclick="importFromPhoneContacts()">📇 Aus Handy-Telefonbuch wählen</button>
+
         <form class="contact-form" id="contactForm">
             <input type="text" id="contactName" placeholder="Name / Firma" required>
             <input type="text" id="contactChannel" placeholder="Kanal (Insta, Tel...)">
@@ -174,8 +170,8 @@
 </div>
 
 <script>
-    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v9')) || [];
-    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v9')) || [];
+    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v11')) || [];
+    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v11')) || [];
     let currentFilter = 'all';
     let selectedContactIndex = null;
 
@@ -188,8 +184,8 @@
     const clientDetailContent = document.getElementById('clientDetailContent');
 
     function saveData() {
-        localStorage.setItem('fitline_crm_contacts_v9', JSON.stringify(contacts));
-        localStorage.setItem('fitline_crm_tasks_v9', JSON.stringify(tasks));
+        localStorage.setItem('fitline_crm_contacts_v11', JSON.stringify(contacts));
+        localStorage.setItem('fitline_crm_tasks_v11', JSON.stringify(tasks));
     }
 
     function render() {
@@ -291,6 +287,9 @@
                 </p>
                 <p><strong>Notizen:</strong><br><textarea rows="3" onchange="updateContactField(${index}, 'notes', this.value)">${c.notes || ''}</textarea></p>
             </div>
+            
+            <!-- Button um den Kontakt direkt ins echte Handy-Telefonbuch zu exportieren -->
+            <button class="vcard-btn" onclick="exportVCard(${index})">📇 Als Handy-Kontakt speichern</button>
             <button class="delete-btn" onclick="deleteContact(${index})">🗑️ Diesen Kunden löschen</button>
         `;
     }
@@ -298,6 +297,55 @@
     function updateContactField(index, field, value) {
         contacts[index][field] = value;
         render();
+    }
+
+    // vCard-Export für das echte Telefonbuch (Android & iPhone)
+    function exportVCard(index) {
+        const c = contacts[index];
+        const vcard = [
+            'BEGIN:VCARD',
+            'VERSION:3.0',
+            `FN:${c.name}`,
+            `N:;${c.name};;;`,
+            `TEL;TYPE=CELL:${c.phone || ''}`,
+            `NOTE:FitLine CRM - ${c.type} (${c.status}) ${c.notes || ''}`,
+            'END:VCARD'
+        ].join('\n');
+
+        const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `${c.name.replace(/[^a-zA-Z0-9]/g, '_')}.vcf`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+    }
+
+    async function importFromPhoneContacts() {
+        if (!('contacts' in navigator && 'ContactsManager' in window)) {
+            alert('Dein Browser unterstützt den direkten Zugriff auf das Telefonbuch leider nicht. (Funktioniert direkt in Chrome auf Android).');
+            return;
+        }
+        try {
+            const props = ['name', 'tel', 'email'];
+            const opts = { multiple: false };
+            const selectedContacts = await navigator.contacts.select(props, opts);
+            
+            if (selectedContacts && selectedContacts.length > 0) {
+                const phoneContact = selectedContacts[0];
+                if (phoneContact.name && phoneContact.name[0]) {
+                    document.getElementById('contactName').value = phoneContact.name[0];
+                }
+                if (phoneContact.tel && phoneContact.tel[0]) {
+                    document.getElementById('contactPhone').value = phoneContact.tel[0];
+                }
+                document.getElementById('contactChannel').value = 'Telefon';
+            }
+        } catch (ex) {
+            console.log('Fehler beim Auswählen des Kontakts:', ex);
+        }
     }
 
     function addQuickTask(days) {
@@ -392,48 +440,8 @@
         render();
     }
 
-    // Backup-Funktionen
-    function exportBackup() {
-        const data = {
-            contacts: contacts,
-            tasks: tasks,
-            date: new Date().toISOString()
-        };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", "fitline_crm_backup.json");
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    }
-
-    function importBackup(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const parsed = JSON.parse(e.target.result);
-                if (parsed.contacts && parsed.tasks) {
-                    if (confirm(`Backup vom ${new Date(parsed.date).toLocaleDateString('de-DE')} wirklich einspielen? Bestehende Daten werden überschrieben.`)) {
-                        contacts = parsed.contacts;
-                        tasks = parsed.tasks;
-                        render();
-                        alert('Backup erfolgreich wiederhergestellt!');
-                    }
-                } else {
-                    alert('Ungültige Backup-Datei.');
-                }
-            } catch (err) {
-                alert('Fehler beim Lesen der Datei.');
-            }
-        };
-        reader.readAsText(file);
-    }
-
     render();
 </script>
 
 </body>
-</html>   
+</html>
