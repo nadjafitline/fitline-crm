@@ -48,9 +48,6 @@
 
         .delete-btn { background: #e74c3c; padding: 8px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; width: auto; margin: 0; }
         .delete-btn:hover { background: #c0392b; }
-
-        .add-task-row-btn { background: #2980b9; padding: 5px 10px; font-size: 11px; border-radius: 4px; color: white; border: none; cursor: pointer; width: auto; }
-        .add-task-row-btn:hover { background: #1f618d; }
         
         .done { text-decoration: line-through; color: #888; }
         .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #fff; display: inline-block; text-shadow: 0 1px 1px rgba(0,0,0,0.2); }
@@ -58,10 +55,10 @@
 
         /* Modal Pop-up */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
         .close-modal { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .close-modal:hover { background: #c0392b; }
-        .section-box { background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-top: 12px; }
+        .section-box { background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -101,9 +98,9 @@
 
     <div class="dashboard">
         
-        <!-- 2. Aktive Aufgaben & Wiedervorlagen -->
+        <!-- 2. Gesamtübersicht aller offenen Aufgaben -->
         <div class="card">
-            <h2>📋 Aktive Aufgaben & Wiedervorlagen</h2>
+            <h2>📋 Alle offenen Aufgaben & Wiedervorlagen</h2>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -122,7 +119,7 @@
 
         <!-- 3. Kontakte & Suche -->
         <div class="card">
-            <h2>👥 Kontakte & Suche (Klick auf Namen = Details | Klick auf +Aufgabe = Task setzen)</h2>
+            <h2>👥 Kontakte & Suche (Klick auf Namen öffnet Details & Aufgaben)</h2>
             
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="🔍 Nach Namen, Telefon oder Kanal suchen..." oninput="render()">
@@ -147,7 +144,6 @@
                             <th>Typ</th>
                             <th>Status</th>
                             <th>Kanal</th>
-                            <th style="text-align: center;">Aktion</th>
                         </tr>
                     </thead>
                     <tbody id="contactTableBody"></tbody>
@@ -158,11 +154,11 @@
     </div>
 </div>
 
-<!-- Modal Pop-up für Kundendetails & direkte Aufgaben -->
+<!-- Modal Pop-up für Kundendetails & integrierte Aufgaben -->
 <div class="modal-overlay" id="contactModal">
     <div class="modal-content">
         <button class="close-modal" onclick="closeModal()">X</button>
-        <h2 id="modalTitle">🔍 Kundendetails & Aufgaben</h2>
+        <h2>🔍 Kundendetails & Aufgaben</h2>
         <div id="clientDetailContent"></div>
     </div>
 </div>
@@ -179,7 +175,6 @@
     const searchInput = document.getElementById('searchInput');
     const contactModal = document.getElementById('contactModal');
     const clientDetailContent = document.getElementById('clientDetailContent');
-    const modalTitle = document.getElementById('modalTitle');
 
     function saveData() {
         localStorage.setItem('fitline_crm_contacts_v12', JSON.stringify(contacts));
@@ -221,22 +216,19 @@
             if (c.status === 'Kein Interesse') statusColor = '#7f8c8d';
 
             contactTableBody.innerHTML += `
-                <tr class="clickable">
-                    <td class="client-name-cell" onclick="openContact(${c.originalIndex})">
+                <tr class="clickable" onclick="openContact(${c.originalIndex})">
+                    <td class="client-name-cell">
                         <strong>${c.name}</strong>
                         <span class="date-small">${c.createdDate}</span>
                     </td>
                     <td><strong>${c.type}</strong></td>
                     <td><span class="badge" style="background-color: ${statusColor};">${c.status}</span></td>
                     <td>${c.channel || '-'}</td>
-                    <td style="text-align: center;">
-                        <button class="add-task-row-btn" onclick="openTaskModal(${c.originalIndex})">+ Aufgabe</button>
-                    </td>
                 </tr>`;
         });
 
         if (filteredContacts.length === 0) {
-            contactTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888; padding: 15px;">Keine Kontakte gefunden.</td></tr>`;
+            contactTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888; padding: 15px;">Keine Kontakte gefunden.</td></tr>`;
         }
 
         tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -262,16 +254,38 @@
         render();
     }
 
-    // Nur Details anzeigen / bearbeiten (bei Klick auf den Namen)
+    // Kunden-Bearbeitungs-Fenster mit integrierten Aufgaben für diesen Kunden
     function openContact(index) {
         selectedContactIndex = index;
         const c = contacts[index];
-        modalTitle.innerText = "🔍 Kundendetails bearbeiten";
+
+        // Finde alle Aufgaben, die genau zu diesem Kunden gehören
+        const clientTasks = tasks.map((t, tIndex) => ({ ...t, tIndex })).filter(t => t.clientName === c.name);
+
+        let tasksHtml = '';
+        if (clientTasks.length > 0) {
+            clientTasks.forEach(t => {
+                tasksHtml += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 6px 10px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #ddd;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask(${t.tIndex}); openContact(${index});" style="transform: scale(1.1);">
+                            <span class="${t.done ? 'done' : ''}" style="font-size: 12px;"><strong>${t.text}</strong> (${t.date})</span>
+                        </div>
+                        <button class="delete-btn" style="padding: 2px 6px; font-size: 10px;" onclick="deleteTask(${t.tIndex}); openContact(${index});">X</button>
+                    </div>`;
+            });
+        } else {
+            tasksHtml = `<div style="font-size: 12px; color: #7f8c8d; font-style: italic; margin-bottom: 8px;">Keine offenen Aufgaben für diesen Kunden.</div>`;
+        }
+
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 3);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
         clientDetailContent.innerHTML = `
-            <button class="save-btn" style="margin-bottom: 15px;" onclick="exportVCardData('${c.name}', '${c.phone || ''}', '${c.type}', '${c.status}', '${c.notes || ''}')">📇 Erneut als Handykontakt speichern</button>
+            <button class="save-btn" style="margin-bottom: 12px;" onclick="exportVCardData('${c.name}', '${c.phone || ''}', '${c.type}', '${c.status}', '${c.notes || ''}')">📇 Erneut als Handykontakt speichern</button>
 
-            <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div>
                     <label style="font-size: 11px; font-weight: bold; color: #555;">Name / Firma:</label>
                     <input type="text" value="${c.name}" onchange="updateContactField(${index}, 'name', this.value)">
@@ -304,47 +318,32 @@
                 </div>
                 <div>
                     <label style="font-size: 11px; font-weight: bold; color: #555;">Notizen:</label>
-                    <textarea rows="3" onchange="updateContactField(${index}, 'notes', this.value)">${c.notes || ''}</textarea>
+                    <textarea rows="2" onchange="updateContactField(${index}, 'notes', this.value)">${c.notes || ''}</textarea>
                 </div>
             </div>
-        `;
 
-        contactModal.style.display = 'flex';
-    }
+            <!-- INTEGRIERTE AUFGABEN DIREKT BEIM KUNDEN -->
+            <div class="section-box">
+                <label style="font-size: 12px; font-weight: bold; color: #2c3e50; display: block; margin-bottom: 8px;">⚡ Aufgaben für diesen Kunden:</label>
+                
+                ${tasksHtml}
 
-    // Gezieltes Aufgaben-Fenster (bei Klick auf "+ Aufgabe" in der Tabellenzeile)
-    function openTaskModal(index) {
-        selectedContactIndex = index;
-        const c = contacts[index];
-        modalTitle.innerText = `⚡ Aufgabe für ${c.name} erstellen`;
-
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 3);
-        const tomorrowStr = tomorrow.toISOString().split('T')[0];
-
-        clientDetailContent.innerHTML = `
-            <div style="font-size: 13px; color: #555; margin-bottom: 12px;">Wähle eine Schnell-Aufgabe oder tippe direkt etwas ein:</div>
-            
-            <div class="quick-task-bar">
-                <button class="quick-btn" onclick="addModalTaskDays(3)">+ 3 Tage</button>
-                <button class="quick-btn" onclick="addModalTaskDays(7)">+ 7 Tage</button>
-                <button class="quick-btn" onclick="addModalTaskDays(14)">+ 14 Tage</button>
-                <button class="quick-btn" onclick="addModalTaskCustom('Termin vereinbaren', 1)">+ Termin</button>
-                <button class="quick-btn" onclick="addModalTaskCustom('Party eingeladen', 1)">+ Party</button>
-                <button class="quick-btn" onclick="addModalTaskCustom('Call eingeladen', 1)">+ Call</button>
-                <button class="quick-btn" onclick="addModalTaskCustom('Action Pack nachfassen', 3)">+ Action Pack</button>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-                <div>
-                    <label style="font-size: 11px; font-weight: bold; color: #555;">Eigene Aufgabe:</label>
-                    <input type="text" id="modalTaskText" placeholder="z. B. Produktunterlagen senden...">
+                <div style="font-size: 11px; font-weight: bold; color: #555; margin-top: 10px; margin-bottom: 4px;">Schnell hinzufügen:</div>
+                <div class="quick-task-bar">
+                    <button class="quick-btn" onclick="addModalTaskDays(3)">+ 3 Tage</button>
+                    <button class="quick-btn" onclick="addModalTaskDays(7)">+ 7 Tage</button>
+                    <button class="quick-btn" onclick="addModalTaskDays(14)">+ 14 Tage</button>
+                    <button class="quick-btn" onclick="addModalTaskCustom('Termin vereinbaren', 1)">+ Termin</button>
+                    <button class="quick-btn" onclick="addModalTaskCustom('Party eingeladen', 1)">+ Party</button>
+                    <button class="quick-btn" onclick="addModalTaskCustom('Call eingeladen', 1)">+ Call</button>
+                    <button class="quick-btn" onclick="addModalTaskCustom('Action Pack nachfassen', 3)">+ Action Pack</button>
                 </div>
-                <div>
-                    <label style="font-size: 11px; font-weight: bold; color: #555;">Fälligkeitsdatum:</label>
-                    <input type="date" id="modalTaskDate" value="${tomorrowStr}">
+
+                <div style="display: flex; gap: 5px; margin-top: 8px;">
+                    <input type="text" id="modalTaskText" placeholder="Eigene Aufgabe..." style="flex: 2;">
+                    <input type="date" id="modalTaskDate" value="${tomorrowStr}" style="flex: 1;">
+                    <button onclick="addModalCustomTaskSubmit()" style="width: auto; padding: 8px 12px; font-size: 12px;">+ Add</button>
                 </div>
-                <button class="save-btn" style="margin-top: 5px;" onclick="addModalCustomTaskSubmit()">Aufgabe speichern</button>
             </div>
         `;
 
@@ -374,8 +373,8 @@
             date: dateString,
             done: false
         });
-        closeModal();
-        alert(`Aufgabe (+${days} Tage) für ${client.name} hinzugefügt!`);
+        saveData();
+        openContact(selectedContactIndex); // Aktualisiert das Modal direkt
     }
 
     function addModalTaskCustom(text, days) {
@@ -391,8 +390,8 @@
             date: dateString,
             done: false
         });
-        closeModal();
-        alert(`Aufgabe "${text}" für ${client.name} hinzugefügt!`);
+        saveData();
+        openContact(selectedContactIndex); // Aktualisiert das Modal direkt
     }
 
     function addModalCustomTaskSubmit() {
@@ -413,8 +412,8 @@
             done: false
         });
 
-        closeModal();
-        alert(`Aufgabe für ${client.name} hinzugefügt!`);
+        saveData();
+        openContact(selectedContactIndex); // Aktualisiert das Modal direkt
     }
 
     function exportVCardData(name, phone, type, status, notes) {
@@ -492,12 +491,12 @@
 
     function deleteTask(index) {
         tasks.splice(index, 1);
-        render();
+        saveData();
     }
 
     function toggleTask(index) {
         tasks[index].done = !tasks[index].done;
-        render();
+        saveData();
     }
 
     render();
