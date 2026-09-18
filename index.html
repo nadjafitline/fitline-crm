@@ -96,11 +96,11 @@
             
             <!-- Integrierter Task-Bereich beim Anlegen -->
             <div class="form-group-task">
-                <label style="font-size: 11px; font-weight: bold; color: #2c3e50;">📋 Erste Aufgabe / Wiedervorlage für diesen Kunden:</label>
-                <input type="text" id="contactTaskText" value="Nachfassen / Vorstellen" placeholder="Aufgabentext eingeben...">
+                <label style="font-size: 11px; font-weight: bold; color: #2c3e50;">📋 Erste Aufgabe / Wiedervorlage für diesen Kunden *:</label>
+                <input type="text" id="contactTaskText" value="Nachfassen / Vorstellen" placeholder="Aufgabentext eingeben..." required>
                 <div style="display: flex; gap: 5px; align-items: center;">
                     <span style="font-size: 11px; color: #555; width: 50px;">Fällig:</span>
-                    <input type="date" id="contactTaskDate">
+                    <input type="date" id="contactTaskDate" required>
                 </div>
             </div>
 
@@ -138,14 +138,14 @@
             </div>
 
             <div class="filter-bar" id="filterBar">
-                <button class="filter-btn active" onclick="setFilter('all')">Alle</button>
-                <button class="filter-btn" onclick="setFilter('Unkontaktiert')">Unkontaktiert</button>
-                <button class="filter-btn" onclick="setFilter('Kontaktiert')">Kontaktiert</button>
-                <button class="filter-btn" onclick="setFilter('Interessiert')">Interessiert</button>
-                <button class="filter-btn" onclick="setFilter('Später interessiert')">Später</button>
-                <button class="filter-btn" onclick="setFilter('Kein Interesse')">Kein Interesse</button>
-                <button class="filter-btn" onclick="setFilter('Kunde')">Kunden</button>
-                <button class="filter-btn" onclick="setFilter('Teampartner')">Teampartner</button>
+                <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">Alle</button>
+                <button class="filter-btn" data-filter="Unkontaktiert" onclick="setFilter('Unkontaktiert', this)">Unkontaktiert</button>
+                <button class="filter-btn" data-filter="Kontaktiert" onclick="setFilter('Kontaktiert', this)">Kontaktiert</button>
+                <button class="filter-btn" data-filter="Interessiert" onclick="setFilter('Interessiert', this)">Interessiert</button>
+                <button class="filter-btn" data-filter="Später interessiert" onclick="setFilter('Später interessiert', this)">Später</button>
+                <button class="filter-btn" data-filter="Kein Interesse" onclick="setFilter('Kein Interesse', this)">Kein Interesse</button>
+                <button class="filter-btn" data-filter="Kunde" onclick="setFilter('Kunde', this)">Kunden</button>
+                <button class="filter-btn" data-filter="Teampartner" onclick="setFilter('Teampartner', this)">Teampartner</button>
             </div>
 
             <div class="table-responsive">
@@ -176,8 +176,8 @@
 </div>
 
 <script>
-    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v13')) || [];
-    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v13')) || [];
+    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v14')) || [];
+    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v14')) || [];
     let currentFilter = 'all';
     let selectedContactIndex = null;
 
@@ -188,7 +188,7 @@
     const contactModal = document.getElementById('contactModal');
     const clientDetailContent = document.getElementById('clientDetailContent');
 
-    // Standard-Datum auf in 3 Tagen setzen für das Formular ganz oben
+    // Standard-Datum auf in 3 Tagen setzen
     function initDefaultDate() {
         const d = new Date();
         d.setDate(d.getDate() + 3);
@@ -199,8 +199,8 @@
     initDefaultDate();
 
     function saveData() {
-        localStorage.setItem('fitline_crm_contacts_v13', JSON.stringify(contacts));
-        localStorage.setItem('fitline_crm_tasks_v13', JSON.stringify(tasks));
+        localStorage.setItem('fitline_crm_contacts_v14', JSON.stringify(contacts));
+        localStorage.setItem('fitline_crm_tasks_v14', JSON.stringify(tasks));
     }
 
     function render() {
@@ -269,10 +269,12 @@
         saveData();
     }
 
-    function setFilter(filter) {
+    function setFilter(filter, btnElement) {
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+        if (btnElement) {
+            btnElement.classList.add('active');
+        }
         render();
     }
 
@@ -401,6 +403,7 @@
 
         saveData();
         openContact(selectedContactIndex);
+        render();
     }
 
     function addModalCustomTaskSubmit() {
@@ -430,6 +433,7 @@
 
         saveData();
         openContact(selectedContactIndex);
+        render();
     }
 
     function exportVCardData(name, phone, type, status, notes) {
@@ -493,6 +497,11 @@
         const taskText = document.getElementById('contactTaskText').value.trim();
         const taskDate = document.getElementById('contactTaskDate').value;
 
+        if (!taskText) {
+            alert('Bitte einen Text für die Aufgabe eingeben.');
+            return;
+        }
+
         // 1. Kontakt speichern
         contacts.push({
             name: name,
@@ -504,19 +513,17 @@
             createdDate: today
         });
 
-        // 2. Direkt zugehörige Aufgabe mit abspeichern, falls Text eingegeben wurde
-        if (taskText) {
-            tasks.push({
-                text: taskText,
-                clientName: name,
-                date: taskDate || today,
-                done: false
-            });
-        }
+        // 2. Direkt zugehörige Aufgabe abspeichern
+        tasks.push({
+            text: taskText,
+            clientName: name,
+            date: taskDate || today,
+            done: false
+        });
 
         exportVCardData(name, phone, type, status, notes);
         
-        // Formular zurücksetzen (Datum wieder vorbelegen)
+        // Formular zurücksetzen
         document.getElementById('contactForm').reset();
         initDefaultDate();
         document.getElementById('contactTaskText').value = 'Nachfassen / Vorstellen';
@@ -527,11 +534,13 @@
     function deleteTask(index) {
         tasks.splice(index, 1);
         saveData();
+        render();
     }
 
     function toggleTask(index) {
         tasks[index].done = !tasks[index].done;
         saveData();
+        render();
     }
 
     render();
