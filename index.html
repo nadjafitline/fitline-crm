@@ -16,6 +16,10 @@
 
         .contact-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
         .task-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+        
+        .search-box { margin-bottom: 10px; }
+        .search-box input { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; }
+
         .filter-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
         .filter-btn { background: #e0e0e0; color: #333; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .filter-btn.active { background: #2c3e50; color: white; }
@@ -43,7 +47,7 @@
         tr.clickable:hover { background: #f1f8ff; }
         tr.selected { background: #e3f2fd !important; font-weight: bold; }
 
-        .delete-btn { background: #e74c3c; padding: 8px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .delete-btn { background: #e74c3c; padding: 8px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; width: auto; margin: 0; }
         .delete-btn:hover { background: #c0392b; }
         
         .done { text-decoration: line-through; color: #888; }
@@ -89,7 +93,7 @@
 
     <div class="dashboard">
         
-        <!-- 2. Kundendetails (öffnet sich beim Klick auf einen Kontakt in der Tabelle) -->
+        <!-- 2. Kundendetails (öffnet sich beim Klick auf einen Kontakt) -->
         <div class="card" id="detailCard" style="display: none;">
             <h2>🔍 Kundendetails & Bearbeiten</h2>
             <div id="clientDetailContent"></div>
@@ -135,10 +139,15 @@
             </div>
         </div>
 
-        <!-- 4. Kontakte & Filter ganz unten -->
+        <!-- 4. Kontakte, Suche & Filter -->
         <div class="card">
-            <h2>👥 Kontakte & Filter</h2>
+            <h2>👥 Kontakte & Suche</h2>
             
+            <!-- Suchfeld -->
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Nach Namen oder Telefon suchen..." oninput="render()">
+            </div>
+
             <div class="filter-bar" id="filterBar">
                 <button class="filter-btn active" onclick="setFilter('all')">Alle</button>
                 <button class="filter-btn" onclick="setFilter('Unkontaktiert')">Unkontaktiert</button>
@@ -181,6 +190,7 @@
     const taskClientSelect = document.getElementById('taskClientSelect');
     const detailCard = document.getElementById('detailCard');
     const clientDetailContent = document.getElementById('clientDetailContent');
+    const searchInput = document.getElementById('searchInput');
 
     function saveData() {
         localStorage.setItem('fitline_crm_contacts_v12', JSON.stringify(contacts));
@@ -191,10 +201,29 @@
         contactTableBody.innerHTML = '';
         taskClientSelect.innerHTML = '<option value="">-- Kunde zuordnen --</option>';
 
+        const searchQuery = searchInput.value.toLowerCase().trim();
+
         let filteredContacts = contacts.map((c, originalIndex) => ({ ...c, originalIndex })).filter(c => {
-            if (currentFilter === 'all') return true;
-            if (currentFilter === 'Kunde' || currentFilter === 'Teampartner') return c.type === currentFilter;
-            return c.status === currentFilter;
+            // Filter nach Kategorie/Status
+            let matchesFilter = true;
+            if (currentFilter !== 'all') {
+                if (currentFilter === 'Kunde' || currentFilter === 'Teampartner') {
+                    matchesFilter = c.type === currentFilter;
+                } else {
+                    matchesFilter = c.status === currentFilter;
+                }
+            }
+
+            // Filter nach Suchtext (Name, Telefon oder Kanal)
+            let matchesSearch = true;
+            if (searchQuery) {
+                const nameMatch = c.name && c.name.toLowerCase().includes(searchQuery);
+                const phoneMatch = c.phone && c.phone.toLowerCase().includes(searchQuery);
+                const channelMatch = c.channel && c.channel.toLowerCase().includes(searchQuery);
+                matchesSearch = nameMatch || phoneMatch || channelMatch;
+            }
+
+            return matchesFilter && matchesSearch;
         });
 
         filteredContacts.forEach((c) => {
@@ -234,11 +263,10 @@
                     <td class="${t.done ? 'done' : ''}">${t.text}</td>
                     <td><strong>${t.clientName}</strong></td>
                     <td class="${t.done ? 'done' : ''}">${t.date}</td>
-                    <td><button class="delete-btn" style="width: auto; padding: 3px 6px; margin:0;" onclick="deleteTask(${index})">X</button></td>
+                    <td><button class="delete-btn" onclick="deleteTask(${index})">X</button></td>
                 </tr>`;
         });
 
-        // Detailansicht korrekt steuern
         if (selectedContactIndex !== null && contacts[selectedContactIndex]) {
             showClientDetails(selectedContactIndex);
         } else {
@@ -258,7 +286,6 @@
     function selectContact(index) {
         selectedContactIndex = index;
         render();
-        // Direkt zur Detailkarte scrollen, damit man sie sofort sieht
         detailCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
@@ -291,8 +318,6 @@
                 </p>
                 <p><strong>Notizen:</strong><br><textarea rows="3" onchange="updateContactField(${index}, 'notes', this.value)">${c.notes || ''}</textarea></p>
             </div>
-            
-            <button class="delete-btn" onclick="deleteContact(${index})">🗑️ Diesen Kunden löschen</button>
         `;
     }
 
@@ -407,7 +432,6 @@
             createdDate: today
         });
 
-        // Sofortiger automatischer Export als Handykontakt-Datei beim Speichern
         exportVCardData(name, phone, type, status, notes);
 
         document.getElementById('contactForm').reset();
@@ -429,16 +453,6 @@
         document.getElementById('taskClientSelect').value = '';
         render();
     });
-
-    function deleteContact(index) {
-        if (confirm('Möchtest du diesen Kontakt wirklich löschen?')) {
-            const clientName = contacts[index].name;
-            contacts.splice(index, 1);
-            tasks = tasks.filter(t => t.clientName !== clientName);
-            selectedContactIndex = null;
-            render();
-        }
-    }
 
     function deleteTask(index) {
         tasks.splice(index, 1);
