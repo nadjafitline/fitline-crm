@@ -325,24 +325,23 @@
                 
                 ${tasksHtml}
 
-                <div style="font-size: 11px; font-weight: bold; color: #555; margin-top: 10px; margin-bottom: 4px;">Schnell hinzufügen:</div>
+                <div style="font-size: 11px; font-weight: bold; color: #555; margin-top: 10px; margin-bottom: 4px;">Mit 1 Klick hinzufügen:</div>
                 <div class="quick-task-bar">
-                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Nachfassen (3 Tage)', 3)">+ 3 Tage</button>
-                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Nachfassen (7 Tage)', 7)">+ 7 Tage</button>
-                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Nachfassen (14 Tage)', 14)">+ 14 Tage</button>
-                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Termin vereinbaren', 1)">+ Termin</button>
-                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Party eingeladen', 1)">+ Party</button>
-                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Call eingeladen', 1)">+ Call</button>
-                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Action Pack nachfassen', 3)">+ Action Pack</button>
+                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Nachfassen (3 Tage)', 3)">+ 3 Tage</button>
+                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Nachfassen (7 Tage)', 7)">+ 7 Tage</button>
+                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Nachfassen (14 Tage)', 14)">+ 14 Tage</button>
+                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Termin vereinbaren', 1)">+ Termin</button>
+                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Party eingeladen', 1)">+ Party</button>
+                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Call eingeladen', 1)">+ Call</button>
+                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Action Pack nachfassen', 3)">+ Action Pack</button>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                    <div style="font-size: 11px; font-weight: bold; color: #555;">Oder eigene Aufgabe manuell eintragen:</div>
                     <div>
-                        <label style="font-size: 11px; font-weight: bold; color: #555;">Aufgaben-Text / Notiz:</label>
                         <input type="text" id="modalTaskText" placeholder="z. B. Unterlagen senden...">
                     </div>
                     <div>
-                        <label style="font-size: 11px; font-weight: bold; color: #555;">Datum wählen:</label>
                         <input type="date" id="modalTaskDate" value="${tomorrowStr}">
                     </div>
                     <button type="button" class="save-btn" onclick="addModalCustomTaskSubmit()">Aufgabe speichern</button>
@@ -363,14 +362,24 @@
         saveData();
     }
 
-    function setQuickDateAndAdd(text, days) {
+    // Sofortiges Speichern bei Klick auf einen der Schnell-Buttons (+ 3 Tage etc.)
+    function addQuickTaskDirect(text, days) {
+        if (selectedContactIndex === null) return;
+        const client = contacts[selectedContactIndex];
+
         const targetDate = new Date();
         targetDate.setDate(targetDate.getDate() + days);
         const dateString = targetDate.toISOString().split('T')[0];
 
-        // Trägt Text und berechnetes Datum direkt in die Felder ein, damit der Nutzer es sieht/anpassen kann
-        document.getElementById('modalTaskText').value = text;
-        document.getElementById('modalTaskDate').value = dateString;
+        tasks.push({
+            text: text,
+            clientName: client.name,
+            date: dateString,
+            done: false
+        });
+
+        saveData();
+        openContact(selectedContactIndex); // Aktualisiert das Modal sofort, damit die Aufgabe direkt sichtbar ist
     }
 
     function addModalCustomTaskSubmit() {
