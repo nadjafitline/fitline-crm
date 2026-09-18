@@ -254,12 +254,10 @@
         render();
     }
 
-    // Kunden-Bearbeitungs-Fenster mit integrierten Aufgaben für diesen Kunden
     function openContact(index) {
         selectedContactIndex = index;
         const c = contacts[index];
 
-        // Finde alle Aufgaben, die genau zu diesem Kunden gehören
         const clientTasks = tasks.map((t, tIndex) => ({ ...t, tIndex })).filter(t => t.clientName === c.name);
 
         let tasksHtml = '';
@@ -322,7 +320,6 @@
                 </div>
             </div>
 
-            <!-- INTEGRIERTE AUFGABEN DIREKT BEIM KUNDEN -->
             <div class="section-box">
                 <label style="font-size: 12px; font-weight: bold; color: #2c3e50; display: block; margin-bottom: 8px;">⚡ Aufgaben für diesen Kunden:</label>
                 
@@ -330,19 +327,25 @@
 
                 <div style="font-size: 11px; font-weight: bold; color: #555; margin-top: 10px; margin-bottom: 4px;">Schnell hinzufügen:</div>
                 <div class="quick-task-bar">
-                    <button class="quick-btn" onclick="addModalTaskDays(3)">+ 3 Tage</button>
-                    <button class="quick-btn" onclick="addModalTaskDays(7)">+ 7 Tage</button>
-                    <button class="quick-btn" onclick="addModalTaskDays(14)">+ 14 Tage</button>
-                    <button class="quick-btn" onclick="addModalTaskCustom('Termin vereinbaren', 1)">+ Termin</button>
-                    <button class="quick-btn" onclick="addModalTaskCustom('Party eingeladen', 1)">+ Party</button>
-                    <button class="quick-btn" onclick="addModalTaskCustom('Call eingeladen', 1)">+ Call</button>
-                    <button class="quick-btn" onclick="addModalTaskCustom('Action Pack nachfassen', 3)">+ Action Pack</button>
+                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Nachfassen (3 Tage)', 3)">+ 3 Tage</button>
+                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Nachfassen (7 Tage)', 7)">+ 7 Tage</button>
+                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Nachfassen (14 Tage)', 14)">+ 14 Tage</button>
+                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Termin vereinbaren', 1)">+ Termin</button>
+                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Party eingeladen', 1)">+ Party</button>
+                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Call eingeladen', 1)">+ Call</button>
+                    <button class="quick-btn" type="button" onclick="setQuickDateAndAdd('Action Pack nachfassen', 3)">+ Action Pack</button>
                 </div>
 
-                <div style="display: flex; gap: 5px; margin-top: 8px;">
-                    <input type="text" id="modalTaskText" placeholder="Eigene Aufgabe..." style="flex: 2;">
-                    <input type="date" id="modalTaskDate" value="${tomorrowStr}" style="flex: 1;">
-                    <button onclick="addModalCustomTaskSubmit()" style="width: auto; padding: 8px 12px; font-size: 12px;">+ Add</button>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #555;">Aufgaben-Text / Notiz:</label>
+                        <input type="text" id="modalTaskText" placeholder="z. B. Unterlagen senden...">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #555;">Datum wählen:</label>
+                        <input type="date" id="modalTaskDate" value="${tomorrowStr}">
+                    </div>
+                    <button type="button" class="save-btn" onclick="addModalCustomTaskSubmit()">Aufgabe speichern</button>
                 </div>
             </div>
         `;
@@ -360,38 +363,14 @@
         saveData();
     }
 
-    function addModalTaskDays(days) {
-        if (selectedContactIndex === null) return;
-        const client = contacts[selectedContactIndex];
+    function setQuickDateAndAdd(text, days) {
         const targetDate = new Date();
         targetDate.setDate(targetDate.getDate() + days);
         const dateString = targetDate.toISOString().split('T')[0];
 
-        tasks.push({
-            text: `Nachfassen (${days} Tage)`,
-            clientName: client.name,
-            date: dateString,
-            done: false
-        });
-        saveData();
-        openContact(selectedContactIndex); // Aktualisiert das Modal direkt
-    }
-
-    function addModalTaskCustom(text, days) {
-        if (selectedContactIndex === null) return;
-        const client = contacts[selectedContactIndex];
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + days);
-        const dateString = targetDate.toISOString().split('T')[0];
-
-        tasks.push({
-            text: text,
-            clientName: client.name,
-            date: dateString,
-            done: false
-        });
-        saveData();
-        openContact(selectedContactIndex); // Aktualisiert das Modal direkt
+        // Trägt Text und berechnetes Datum direkt in die Felder ein, damit der Nutzer es sieht/anpassen kann
+        document.getElementById('modalTaskText').value = text;
+        document.getElementById('modalTaskDate').value = dateString;
     }
 
     function addModalCustomTaskSubmit() {
