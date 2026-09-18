@@ -34,10 +34,6 @@
         .save-btn { background: #27ae60; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; border-radius: 4px; border: none; color: white; font-weight: bold; cursor: pointer; padding: 10px; }
         .save-btn:hover { background: #219653; }
 
-        .quick-task-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
-        .quick-btn { background: #34495e; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; width: auto; }
-        .quick-btn:hover { background: #2c3e50; }
-
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: left; vertical-align: middle; font-size: 12px; }
@@ -67,7 +63,7 @@
 <div class="container">
     <h1>FitLine CRM</h1>
 
-    <!-- 1. Neuer Kontakt inkl. direkter Pflichtaufgabe -->
+    <!-- 1. Neuer Kontakt inkl. Aufgaben-Dropdown -->
     <div class="card">
         <h2>Neuen Kontakt & Aufgabe anlegen</h2>
         
@@ -94,11 +90,26 @@
 
             <textarea id="contactNotes" placeholder="Allgemeine Notizen..." rows="2"></textarea>
             
-            <!-- Integrierter Task-Bereich beim Anlegen -->
+            <!-- Task Dropdown Bereich beim Anlegen -->
             <div class="form-group-task">
-                <label style="font-size: 11px; font-weight: bold; color: #2c3e50;">📋 Erste Aufgabe / Wiedervorlage für diesen Kunden *:</label>
-                <input type="text" id="contactTaskText" value="Nachfassen / Vorstellen" placeholder="Aufgabentext eingeben..." required>
-                <div style="display: flex; gap: 5px; align-items: center;">
+                <label style="font-size: 11px; font-weight: bold; color: #2c3e50;">📋 Aufgabe / Wiedervorlage wählen:</label>
+                <select id="contactTaskSelect" onchange="toggleCustomTaskInput('contactTaskSelect', 'contactCustomTaskWrapper')">
+                    <option value="Nachfassen (3 Tage)">Nachfassen (3 Tage)</option>
+                    <option value="Nachfassen (7 Tage)">Nachfassen (7 Tage)</option>
+                    <option value="Nachfassen (14 Tage)">Nachfassen (14 Tage)</option>
+                    <option value="Termin vereinbaren">Termin vereinbaren</option>
+                    <option value="Party eingeladen">Party eingeladen</option>
+                    <option value="Call eingeladen">Call eingeladen</option>
+                    <option value="Action Pack nachfassen">Action Pack nachfassen</option>
+                    <option value="custom">✏️ Eigene Aufgabe eingeben...</option>
+                </select>
+
+                <!-- Manuelles Eingabefeld (wird nur eingeblendet, wenn "Eigene Aufgabe" gewählt wird) -->
+                <div id="contactCustomTaskWrapper" style="display: none;">
+                    <input type="text" id="contactTaskCustomText" placeholder="Eigene Aufgabe eintragen...">
+                </div>
+
+                <div style="display: flex; gap: 5px; align-items: center; margin-top: 4px;">
                     <span style="font-size: 11px; color: #555; width: 50px;">Fällig:</span>
                     <input type="date" id="contactTaskDate" required>
                 </div>
@@ -176,8 +187,8 @@
 </div>
 
 <script>
-    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v14')) || [];
-    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v14')) || [];
+    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v15')) || [];
+    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v15')) || [];
     let currentFilter = 'all';
     let selectedContactIndex = null;
 
@@ -199,8 +210,18 @@
     initDefaultDate();
 
     function saveData() {
-        localStorage.setItem('fitline_crm_contacts_v14', JSON.stringify(contacts));
-        localStorage.setItem('fitline_crm_tasks_v14', JSON.stringify(tasks));
+        localStorage.setItem('fitline_crm_contacts_v15', JSON.stringify(contacts));
+        localStorage.setItem('fitline_crm_tasks_v15', JSON.stringify(tasks));
+    }
+
+    function toggleCustomTaskInput(selectId, wrapperId) {
+        const selectEl = document.getElementById(selectId);
+        const wrapperEl = document.getElementById(wrapperId);
+        if (selectEl.value === 'custom') {
+            wrapperEl.style.display = 'block';
+        } else {
+            wrapperEl.style.display = 'none';
+        }
     }
 
     function render() {
@@ -349,26 +370,27 @@
                 
                 ${tasksHtml}
 
-                <div style="font-size: 11px; font-weight: bold; color: #555; margin-top: 10px; margin-bottom: 4px;">Mit 1 Klick hinzufügen:</div>
-                <div class="quick-task-bar">
-                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Nachfassen (3 Tage)', 3)">+ 3 Tage</button>
-                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Nachfassen (7 Tage)', 7)">+ 7 Tage</button>
-                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Nachfassen (14 Tage)', 14)">+ 14 Tage</button>
-                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Termin vereinbaren', 1)">+ Termin</button>
-                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Party eingeladen', 1)">+ Party</button>
-                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Call eingeladen', 1)">+ Call</button>
-                    <button class="quick-btn" type="button" onclick="addQuickTaskDirect('Action Pack nachfassen', 3)">+ Action Pack</button>
-                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                    <div style="font-size: 11px; font-weight: bold; color: #555;">Neue Aufgabe hinzufügen:</div>
+                    <select id="modalTaskSelect" onchange="toggleCustomTaskInput('modalTaskSelect', 'modalCustomTaskWrapper')">
+                        <option value="Nachfassen (3 Tage)">Nachfassen (3 Tage)</option>
+                        <option value="Nachfassen (7 Tage)">Nachfassen (7 Tage)</option>
+                        <option value="Nachfassen (14 Tage)">Nachfassen (14 Tage)</option>
+                        <option value="Termin vereinbaren">Termin vereinbaren</option>
+                        <option value="Party eingeladen">Party eingeladen</option>
+                        <option value="Call eingeladen">Call eingeladen</option>
+                        <option value="Action Pack nachfassen">Action Pack nachfassen</option>
+                        <option value="custom">✏️ Eigene Aufgabe eingeben...</option>
+                    </select>
 
-                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; border-top: 1px dashed #ccc; padding-top: 10px;">
-                    <div style="font-size: 11px; font-weight: bold; color: #555;">Oder eigene Aufgabe manuell eintragen:</div>
-                    <div>
-                        <input type="text" id="modalTaskText" placeholder="z. B. Unterlagen senden...">
+                    <div id="modalCustomTaskWrapper" style="display: none;">
+                        <input type="text" id="modalTaskCustomText" placeholder="Eigene Aufgabe eintragen...">
                     </div>
+
                     <div>
                         <input type="date" id="modalTaskDate" value="${tomorrowStr}">
                     </div>
-                    <button type="button" class="save-btn" onclick="addModalCustomTaskSubmit()">Aufgabe speichern</button>
+                    <button type="button" class="save-btn" onclick="addModalTaskSubmit()">Aufgabe speichern</button>
                 </div>
             </div>
         `;
@@ -386,31 +408,21 @@
         saveData();
     }
 
-    function addQuickTaskDirect(text, days) {
+    function addModalTaskSubmit() {
         if (selectedContactIndex === null) return;
         const client = contacts[selectedContactIndex];
-
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + days);
-        const dateString = targetDate.toISOString().split('T')[0];
-
-        tasks.push({
-            text: text,
-            clientName: client.name,
-            date: dateString,
-            done: false
-        });
-
-        saveData();
-        openContact(selectedContactIndex);
-        render();
-    }
-
-    function addModalCustomTaskSubmit() {
-        if (selectedContactIndex === null) return;
-        const client = contacts[selectedContactIndex];
-        const textInput = document.getElementById('modalTaskText');
+        const selectEl = document.getElementById('modalTaskSelect');
+        const customInput = document.getElementById('modalTaskCustomText');
         const dateInput = document.getElementById('modalTaskDate');
+
+        let taskText = selectEl.value;
+        if (taskText === 'custom') {
+            taskText = customInput ? customInput.value.trim() : '';
+            if (!taskText) {
+                alert('Bitte einen Text für die eigene Aufgabe eingeben.');
+                return;
+            }
+        }
 
         let taskDate = dateInput ? dateInput.value : '';
         if (!taskDate) {
@@ -419,13 +431,8 @@
             taskDate = fallbackDate.toISOString().split('T')[0];
         }
 
-        if (!textInput || !textInput.value.trim()) {
-            alert('Bitte einen Text für die Aufgabe eingeben.');
-            return;
-        }
-
         tasks.push({
-            text: textInput.value,
+            text: taskText,
             clientName: client.name,
             date: taskDate,
             done: false
@@ -494,12 +501,17 @@
         const status = document.getElementById('contactStatus').value;
         const notes = document.getElementById('contactNotes').value;
         
-        const taskText = document.getElementById('contactTaskText').value.trim();
+        const selectEl = document.getElementById('contactTaskSelect');
+        const customInput = document.getElementById('contactTaskCustomText');
         const taskDate = document.getElementById('contactTaskDate').value;
 
-        if (!taskText) {
-            alert('Bitte einen Text für die Aufgabe eingeben.');
-            return;
+        let taskText = selectEl.value;
+        if (taskText === 'custom') {
+            taskText = customInput ? customInput.value.trim() : '';
+            if (!taskText) {
+                alert('Bitte einen Text für die eigene Aufgabe eingeben.');
+                return;
+            }
         }
 
         // 1. Kontakt speichern
@@ -513,7 +525,7 @@
             createdDate: today
         });
 
-        // 2. Direkt zugehörige Aufgabe abspeichern
+        // 2. Aufgabe mit abspeichern
         tasks.push({
             text: taskText,
             clientName: name,
@@ -526,7 +538,8 @@
         // Formular zurücksetzen
         document.getElementById('contactForm').reset();
         initDefaultDate();
-        document.getElementById('contactTaskText').value = 'Nachfassen / Vorstellen';
+        document.getElementById('contactTaskSelect').value = 'Nachfassen (3 Tage)';
+        document.getElementById('contactCustomTaskWrapper').style.display = 'none';
 
         render();
     });
