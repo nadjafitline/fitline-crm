@@ -104,7 +104,6 @@
                     <option value="custom">✏️ Eigene Aufgabe eingeben...</option>
                 </select>
 
-                <!-- Manuelles Eingabefeld (wird nur eingeblendet, wenn "Eigene Aufgabe" gewählt wird) -->
                 <div id="contactCustomTaskWrapper" style="display: none;">
                     <input type="text" id="contactTaskCustomText" placeholder="Eigene Aufgabe eintragen...">
                 </div>
@@ -199,6 +198,18 @@
     const contactModal = document.getElementById('contactModal');
     const clientDetailContent = document.getElementById('clientDetailContent');
 
+    // Hilfsfunktion: Wandelt YYYY-MM-DD in DD.MM.YYYY um
+    function formatDateToGerman(dateStr) {
+        if (!dateStr) return '';
+        // Falls das Datum schon im deutschen Format ist, direkt zurückgeben
+        if (dateStr.includes('.')) return dateStr;
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+        return dateStr;
+    }
+
     // Standard-Datum auf in 3 Tagen setzen
     function initDefaultDate() {
         const d = new Date();
@@ -277,12 +288,13 @@
         tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
         taskTableBody.innerHTML = '';
         tasks.forEach((t, index) => {
+            const germanDate = formatDateToGerman(t.date);
             taskTableBody.innerHTML += `
                 <tr>
                     <td style="text-align: center;"><input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask(${index})" style="transform: scale(1.1);"></td>
                     <td class="${t.done ? 'done' : ''}">${t.text}</td>
                     <td><strong>${t.clientName}</strong></td>
-                    <td class="${t.done ? 'done' : ''}">${t.date}</td>
+                    <td class="${t.done ? 'done' : ''}">${germanDate}</td>
                     <td><button class="delete-btn" onclick="deleteTask(${index})">X</button></td>
                 </tr>`;
         });
@@ -308,11 +320,12 @@
         let tasksHtml = '';
         if (clientTasks.length > 0) {
             clientTasks.forEach(t => {
+                const germanDate = formatDateToGerman(t.date);
                 tasksHtml += `
                     <div style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 6px 10px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #ddd;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <input type="checkbox" ${t.done ? 'checked' : ''} onclick="toggleTask(${t.tIndex}); openContact(${index});" style="transform: scale(1.1);">
-                            <span class="${t.done ? 'done' : ''}" style="font-size: 12px;"><strong>${t.text}</strong> (${t.date})</span>
+                            <span class="${t.done ? 'done' : ''}" style="font-size: 12px;"><strong>${t.text}</strong> (${germanDate})</span>
                         </div>
                         <button class="delete-btn" style="padding: 2px 6px; font-size: 10px;" onclick="deleteTask(${t.tIndex}); openContact(${index});">X</button>
                     </div>`;
