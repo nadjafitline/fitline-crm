@@ -83,66 +83,59 @@
             </select>
 
             <textarea id="contactNotes" placeholder="Notizen..." rows="2"></textarea>
-            
-            <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; margin-top: 5px; cursor: pointer;">
-                <input type="checkbox" id="autoExportVCard" checked style="width: auto;"> 
-                <span>Direkt als Handy-Kontakt (vCard) herunterladen</span>
-            </label>
-
-            <button type="submit">Kontakt speichern</button>
+            <button type="submit">Kontakt speichern & ins Handy übernehmen</button>
         </form>
     </div>
 
     <div class="dashboard">
         
-        <!-- 2. Aktive Aufgaben & Details in der Mitte -->
-        <div>
-            <div class="card" id="detailCard" style="display: none;">
-                <h2>🔍 Kundendetails & Bearbeiten</h2>
-                <div id="clientDetailContent"></div>
+        <!-- 2. Kundendetails (öffnet sich beim Klick auf einen Kontakt in der Tabelle) -->
+        <div class="card" id="detailCard" style="display: none;">
+            <h2>🔍 Kundendetails & Bearbeiten</h2>
+            <div id="clientDetailContent"></div>
+        </div>
+
+        <!-- 3. Aktive Aufgaben & Wiedervorlagen -->
+        <div class="card">
+            <h2>📋 Aktive Aufgaben & Wiedervorlagen</h2>
+            
+            <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Schnell-Aufgabe für ausgewählten Kunden:</div>
+            <div class="quick-task-bar">
+                <button class="quick-btn" onclick="addQuickTask(3)">+ 3 Tage</button>
+                <button class="quick-btn" onclick="addQuickTask(7)">+ 7 Tage</button>
+                <button class="quick-btn" onclick="addQuickTask(14)">+ 14 Tage</button>
+                <button class="quick-btn" onclick="addQuickTaskCustom('Termin vereinbaren', 1)">+ Termin</button>
+                <button class="quick-btn" onclick="addQuickTaskCustom('Party eingeladen', 1)">+ Party</button>
+                <button class="quick-btn" onclick="addQuickTaskCustom('Call eingeladen', 1)">+ Call</button>
+                <button class="quick-btn" onclick="addQuickTaskCustom('Action Pack nachfassen', 3)">+ Action Pack</button>
             </div>
 
-            <div class="card">
-                <h2>📋 Aktive Aufgaben & Wiedervorlagen</h2>
-                
-                <div style="font-size: 11px; color: #666; margin-bottom: 4px;">Schnell-Aufgabe für ausgewählten Kunden:</div>
-                <div class="quick-task-bar">
-                    <button class="quick-btn" onclick="addQuickTask(3)">+ 3 Tage</button>
-                    <button class="quick-btn" onclick="addQuickTask(7)">+ 7 Tage</button>
-                    <button class="quick-btn" onclick="addQuickTask(14)">+ 14 Tage</button>
-                    <button class="quick-btn" onclick="addQuickTaskCustom('Termin vereinbaren', 1)">+ Termin</button>
-                    <button class="quick-btn" onclick="addQuickTaskCustom('Party eingeladen', 1)">+ Party</button>
-                    <button class="quick-btn" onclick="addQuickTaskCustom('Call eingeladen', 1)">+ Call</button>
-                    <button class="quick-btn" onclick="addQuickTaskCustom('Action Pack nachfassen', 3)">+ Action Pack</button>
-                </div>
+            <form class="task-form" id="taskForm">
+                <input type="text" id="taskText" placeholder="Aufgabe..." required>
+                <select id="taskClientSelect" required>
+                    <option value="">-- Kunde zuordnen --</option>
+                </select>
+                <input type="date" id="taskDate" required>
+                <button type="submit">+ Aufgabe hinzufügen</button>
+            </form>
 
-                <form class="task-form" id="taskForm">
-                    <input type="text" id="taskText" placeholder="Aufgabe..." required>
-                    <select id="taskClientSelect" required>
-                        <option value="">-- Kunde zuordnen --</option>
-                    </select>
-                    <input type="date" id="taskDate" required>
-                    <button type="submit">+ Aufgabe hinzufügen</button>
-                </form>
-
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 25px; text-align: center;">✓</th>
-                                <th>Aufgabe</th>
-                                <th>Kunde</th>
-                                <th>Fällig</th>
-                                <th style="width: 35px;">X</th>
-                            </tr>
-                        </thead>
-                        <tbody id="taskTableBody"></tbody>
-                    </table>
-                </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 25px; text-align: center;">✓</th>
+                            <th>Aufgabe</th>
+                            <th>Kunde</th>
+                            <th>Fällig</th>
+                            <th style="width: 35px;">X</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskTableBody"></tbody>
+                </table>
             </div>
         </div>
 
-        <!-- 3. Kontakte & Filter ganz unten -->
+        <!-- 4. Kontakte & Filter ganz unten -->
         <div class="card">
             <h2>👥 Kontakte & Filter</h2>
             
@@ -245,6 +238,7 @@
                 </tr>`;
         });
 
+        // Detailansicht korrekt steuern
         if (selectedContactIndex !== null && contacts[selectedContactIndex]) {
             showClientDetails(selectedContactIndex);
         } else {
@@ -264,6 +258,8 @@
     function selectContact(index) {
         selectedContactIndex = index;
         render();
+        // Direkt zur Detailkarte scrollen, damit man sie sofort sieht
+        detailCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function showClientDetails(index) {
@@ -271,7 +267,7 @@
         detailCard.style.display = 'block';
 
         clientDetailContent.innerHTML = `
-            <button class="vcard-btn" onclick="exportVCardData('${c.name}', '${c.phone || ''}', '${c.type}', '${c.status}', '${c.notes || ''}')">📇 Diesen Kontakt als Handy-Datei (.vcf) speichern</button>
+            <button class="vcard-btn" onclick="exportVCardData('${c.name}', '${c.phone || ''}', '${c.type}', '${c.status}', '${c.notes || ''}')">📇 Diesen Kontakt ins Handy-Telefonbuch speichern</button>
 
             <div class="info-box">
                 <p><strong>Name:</strong> <input type="text" value="${c.name}" onchange="updateContactField(${index}, 'name', this.value)"></p>
@@ -305,7 +301,6 @@
         render();
     }
 
-    // Hilfsfunktion zum Generieren und Herunterladen der vCard-Datei
     function exportVCardData(name, phone, type, status, notes) {
         const vcard = [
             'BEGIN:VCARD',
@@ -401,7 +396,6 @@
         const type = document.getElementById('contactType').value;
         const status = document.getElementById('contactStatus').value;
         const notes = document.getElementById('contactNotes').value;
-        const autoExport = document.getElementById('autoExportVCard').checked;
 
         contacts.push({
             name: name,
@@ -413,13 +407,10 @@
             createdDate: today
         });
 
-        // Wenn die Checkbox aktiv ist, wird beim Speichern sofort die vCard heruntergeladen
-        if (autoExport) {
-            exportVCardData(name, phone, type, status, notes);
-        }
+        // Sofortiger automatischer Export als Handykontakt-Datei beim Speichern
+        exportVCardData(name, phone, type, status, notes);
 
         document.getElementById('contactForm').reset();
-        document.getElementById('autoExportVCard').checked = true; // Checkbox wieder aktivieren
         render();
     });
 
@@ -427,7 +418,7 @@
         e.preventDefault();
 
         tasks.push({
-            text: document.getElementById('taskText',).value,
+            text: document.getElementById('taskText').value,
             clientName: document.getElementById('taskClientSelect').value,
             date: document.getElementById('taskDate').value,
             done: false
