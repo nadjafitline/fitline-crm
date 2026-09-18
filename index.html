@@ -59,6 +59,7 @@
         .close-modal { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .close-modal:hover { background: #c0392b; }
         .section-box { background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-top: 15px; }
+        .form-group-task { background: #eef2f7; padding: 10px; border-radius: 6px; border: 1px solid #dcdcdc; display: flex; flex-direction: column; gap: 6px; }
     </style>
 </head>
 <body>
@@ -66,14 +67,14 @@
 <div class="container">
     <h1>FitLine CRM</h1>
 
-    <!-- 1. Neuer Kontakt -->
+    <!-- 1. Neuer Kontakt inkl. direkter Pflichtaufgabe -->
     <div class="card">
-        <h2>Neuen Kontakt anlegen</h2>
+        <h2>Neuen Kontakt & Aufgabe anlegen</h2>
         
         <button type="button" class="import-phone-btn" onclick="importFromPhoneContacts()">📇 Aus Handy-Telefonbuch wählen</button>
 
         <form class="contact-form" id="contactForm">
-            <input type="text" id="contactName" placeholder="Name / Firma" required>
+            <input type="text" id="contactName" placeholder="Name / Firma *" required>
             <input type="text" id="contactChannel" placeholder="Kanal (Insta, Tel...)">
             <input type="text" id="contactPhone" placeholder="Telefon / E-Mail">
             
@@ -91,8 +92,19 @@
                 <option value="Kein Interesse">Kein Interesse</option>
             </select>
 
-            <textarea id="contactNotes" placeholder="Notizen..." rows="2"></textarea>
-            <button type="submit" class="save-btn">📇 Kontakt speichern & ins Handy übernehmen</button>
+            <textarea id="contactNotes" placeholder="Allgemeine Notizen..." rows="2"></textarea>
+            
+            <!-- Integrierter Task-Bereich beim Anlegen -->
+            <div class="form-group-task">
+                <label style="font-size: 11px; font-weight: bold; color: #2c3e50;">📋 Erste Aufgabe / Wiedervorlage für diesen Kunden:</label>
+                <input type="text" id="contactTaskText" value="Nachfassen / Vorstellen" placeholder="Aufgabentext eingeben...">
+                <div style="display: flex; gap: 5px; align-items: center;">
+                    <span style="font-size: 11px; color: #555; width: 50px;">Fällig:</span>
+                    <input type="date" id="contactTaskDate">
+                </div>
+            </div>
+
+            <button type="submit" class="save-btn">📇 Kontakt & Aufgabe speichern</button>
         </form>
     </div>
 
@@ -164,8 +176,8 @@
 </div>
 
 <script>
-    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v12')) || [];
-    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v12')) || [];
+    let contacts = JSON.parse(localStorage.getItem('fitline_crm_contacts_v13')) || [];
+    let tasks = JSON.parse(localStorage.getItem('fitline_crm_tasks_v13')) || [];
     let currentFilter = 'all';
     let selectedContactIndex = null;
 
@@ -176,9 +188,19 @@
     const contactModal = document.getElementById('contactModal');
     const clientDetailContent = document.getElementById('clientDetailContent');
 
+    // Standard-Datum auf in 3 Tagen setzen für das Formular ganz oben
+    function initDefaultDate() {
+        const d = new Date();
+        d.setDate(d.getDate() + 3);
+        const dateStr = d.toISOString().split('T')[0];
+        const taskDateEl = document.getElementById('contactTaskDate');
+        if (taskDateEl) taskDateEl.value = dateStr;
+    }
+    initDefaultDate();
+
     function saveData() {
-        localStorage.setItem('fitline_crm_contacts_v12', JSON.stringify(contacts));
-        localStorage.setItem('fitline_crm_tasks_v12', JSON.stringify(tasks));
+        localStorage.setItem('fitline_crm_contacts_v13', JSON.stringify(contacts));
+        localStorage.setItem('fitline_crm_tasks_v13', JSON.stringify(tasks));
     }
 
     function render() {
@@ -467,7 +489,11 @@
         const type = document.getElementById('contactType').value;
         const status = document.getElementById('contactStatus').value;
         const notes = document.getElementById('contactNotes').value;
+        
+        const taskText = document.getElementById('contactTaskText').value.trim();
+        const taskDate = document.getElementById('contactTaskDate').value;
 
+        // 1. Kontakt speichern
         contacts.push({
             name: name,
             channel: channel,
@@ -478,8 +504,23 @@
             createdDate: today
         });
 
+        // 2. Direkt zugehörige Aufgabe mit abspeichern, falls Text eingegeben wurde
+        if (taskText) {
+            tasks.push({
+                text: taskText,
+                clientName: name,
+                date: taskDate || today,
+                done: false
+            });
+        }
+
         exportVCardData(name, phone, type, status, notes);
+        
+        // Formular zurücksetzen (Datum wieder vorbelegen)
         document.getElementById('contactForm').reset();
+        initDefaultDate();
+        document.getElementById('contactTaskText').value = 'Nachfassen / Vorstellen';
+
         render();
     });
 
