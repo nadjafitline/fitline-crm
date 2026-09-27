@@ -525,11 +525,10 @@ async function sendToHubSpot(payload) {
             { name: 'firstname', value: payload.name },
             { name: 'email', value: payload.email },
             { name: 'phone', value: payload.phone },
-            // Diese drei Feld-Namen müssen exakt den internen Namen
+            // Diese beiden Feld-Namen müssen exakt den internen Namen
             // deiner Kontakt-Eigenschaften in HubSpot entsprechen
             // (Einstellungen → Eigenschaften → Kontakt-Eigenschaften).
             { name: 'quiz_typ', value: payload.type },
-            { name: 'quiz_level', value: payload.level },
             { name: 'quiz_antworten', value: payload.answersText }
           ],
           context: {
