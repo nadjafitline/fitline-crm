@@ -163,6 +163,26 @@
     box-shadow: 0 6px 0 #22758a, 0 10px 18px rgba(47,155,179,0.28);
   }
 
+  /* ---------- Eingebettetes HubSpot-Formular ---------- */
+  #hs-form-target { margin-top: 24px; }
+  #hs-form-target .hs-form-field { margin-bottom: 14px; }
+  #hs-form-target fieldset { max-width: 100% !important; }
+  #hs-form-target label { display:block; font-family:'Work Sans',sans-serif; font-size: 13.5px; color: var(--ink-dim); margin-bottom: 6px; }
+  #hs-form-target input.hs-input:not([type=checkbox]):not([type=radio]),
+  #hs-form-target textarea.hs-input {
+    width: 100% !important; background: var(--card); border: 2px solid var(--line); color: var(--ink);
+    font-family: 'Work Sans', sans-serif; font-size: 15.5px; padding: 13px 14px; border-radius: 12px; outline: none;
+  }
+  #hs-form-target input.hs-input:focus { border-color: var(--sage); }
+  #hs-form-target .hs-button {
+    appearance: none; border: none; cursor: pointer; background: var(--gold); color: #23180a;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16.5px;
+    padding: 15px 30px; border-radius: 999px; margin-top: 18px;
+    box-shadow: 0 6px 0 #c68a12, 0 10px 18px rgba(242,177,52,0.28);
+  }
+  #hs-form-target .hs-error-msgs { list-style: none; padding: 0; margin: 6px 0 0; color: #c1573c; font-size: 13px; }
+  #hs-form-target .hs-richtext, #hs-form-target .legal-consent-container { font-size: 12.5px; color: var(--ink-dim); }
+
   a { color: var(--sage); }
   ::selection { background: var(--gold); color: #23180a; }
 </style>
@@ -181,9 +201,9 @@
   <section class="screen active" id="screen-hero">
     <span class="eyebrow-leaf">🌿</span>
     <h1>Welcher Typ bist du, wenn's um deine Gesundheit geht?</h1>
-    <p class="sub">Manche brauchen ein klares Ziel. Manche eine Gruppe, die mitzieht. Manche einfach mehr Ruhe. In 2 Minuten findest du heraus, was dich wirklich antreibt – und was dir bisher im Weg steht.</p>
+    <p class="sub">Manche brauchen ein klares Ziel. Manche eine Gruppe, die mitzieht. Manche einfach mehr Ruhe. In wenigen Minuten findest du heraus, was dich wirklich antreibt – und was dir bisher im Weg steht.</p>
     <div class="meta">
-      <span>⏱️ <strong>2 Minuten, 9 Fragen</strong></span>
+      <span>⏱️ <strong>ca. 4 Minuten, 22 Fragen</strong></span>
       <span>·</span>
       <span>Kostenlos & unverbindlich</span>
     </div>
@@ -193,26 +213,11 @@
   <!-- QUESTIONS injected here by JS -->
   <div id="quiz-questions"></div>
 
-  <!-- SCREEN: LEAD FORM -->
+  <!-- SCREEN: LEAD FORM (HubSpot-Formular wird hier automatisch eingebettet) -->
   <section class="screen" id="screen-form">
     <div class="q-title">Fast geschafft — wohin dürfen wir dein Ergebnis schicken?</div>
-    <p style="color:var(--ink-dim); font-size:15px; margin-top:-10px;">Du bekommst deinen Antriebs-Typ sofort hier angezeigt und zusätzlich per E-Mail.</p>
-    <div class="form-block">
-      <div class="field">
-        <label for="fName">Vorname</label>
-        <input type="text" id="fName" placeholder="Dein Vorname" autocomplete="given-name">
-      </div>
-      <div class="field">
-        <label for="fEmail">E-Mail</label>
-        <input type="email" id="fEmail" placeholder="du@beispiel.ch" autocomplete="email">
-      </div>
-      <div class="field">
-        <label for="fPhone">WhatsApp-Nummer (optional)</label>
-        <input type="tel" id="fPhone" placeholder="+41 79 000 00 00" autocomplete="tel">
-      </div>
-    </div>
-    <button class="btn-primary" id="submitBtn" onclick="submitForm()">Mein Ergebnis anzeigen</button>
-    <p class="fine-print">Deine Angaben nutzen wir ausschließlich, um dir dein Ergebnis und passende Infos zu Bewegung, Ernährung und Wohlbefinden zuzuschicken.</p>
+    <p style="color:var(--ink-dim); font-size:15px; margin-top:-10px;">Trag dich kurz ein, dann siehst du sofort deinen Antriebs-Typ.</p>
+    <div id="hs-form-target"></div>
   </section>
 
   <!-- SCREEN: RESULT -->
@@ -229,6 +234,7 @@
 
 </div>
 
+<script charset="utf-8" type="text/javascript" src="https://js-eu1.hsforms.net/forms/embed/v2.js"></script>
 <script>
 /* ---------------- Data ---------------- */
 
@@ -236,4 +242,23 @@ const TYPES = {
   gesundheit: {
     icon: '❤️', kicker: 'DEIN ANTRIEBS-TYP', title: 'Die Gesundheitsbewusste',
     color: 'var(--t-gesundheit)',
-    line: 'Dein
+    line: 'Dein Antrieb ist dein Körpergefühl. Du merkst sofort, wenn dir etwas guttut – und genau das ist deine größte Stärke.',
+    body: 'Für dich zählt nicht die schnelle Veränderung, sondern das nachhaltige Gefühl von Wohlbefinden. Kleine, spürbare Verbesserungen im Alltag motivieren dich mehr als große Versprechen.'
+  },
+  ambition: {
+    icon: '💪', kicker: 'DEIN ANTRIEBS-TYP', title: 'Die Ambitionierte',
+    color: 'var(--t-ambition)',
+    line: 'Du brauchst ein klares Ziel und den Beweis, dass du es durchziehen kannst. Sobald du dir etwas vornimmst, willst du es auch schaffen.',
+    body: 'Struktur, messbare Fortschritte und ein sichtbares Ergebnis am Ende des Monats sind für dich der stärkste Antrieb. Ein klarer Plan hilft dir mehr als vage Motivation.'
+  },
+  ruhe: {
+    icon: '😌', kicker: 'DEIN ANTRIEBS-TYP', title: 'Die Ruhesuchende',
+    color: 'var(--t-ruhe)',
+    line: 'Dein Alltag ist voll genug – du suchst vor allem eines: weniger Druck und mehr Klarheit im Kopf.',
+    body: 'Für dich geht es nicht um ein Fitness-Projekt, sondern um eine bewusste Pause vom Alltag. Kleine Rituale ohne Leistungsdruck bringen dich am weitesten.'
+  },
+  gemeinschaft: {
+    icon: '🤝', kicker: 'DEIN ANTRIEBS-TYP', title: 'Die Gemeinschaftsmenschin',
+    color: 'var(--t-gemeinschaft)',
+    line: 'Allein durchzuziehen ist nicht dein Ding – du wächst mit Menschen um dich herum, die dasselbe vorhaben.',
+    body: 'Austausch, gegenseitige Motivation und das Gefühl, nicht allein zu sein, sind für dich der Schlüssel. In einer Gruppe hältst du deutlich länger durch als im
