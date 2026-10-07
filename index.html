@@ -480,4 +480,146 @@ function selectOption(qIdx, optIdx, el) {
   el.classList.add('selected');
 
   const q = ALL_QUESTIONS[qIdx];
-  if (q.kind ===
+  if (q.kind === 'type') {
+    scores[TYPE_KEYS[optIdx]] += 1;
+  } else {
+    qualAnswers[q.qIndex] = q.options[optIdx];
+    if (q.scored !== false) {
+      engagementScore += (optIdx + 1);
+    }
+  }
+  allAnswersText[qIdx] = `${q.title} → ${q.options[optIdx]}`;
+
+  setTimeout(() => {
+    if (qIdx + 1 < ALL_QUESTIONS.length) {
+      goTo('q' + (qIdx + 1));
+    } else {
+      goTo('screen-form');
+    }
+  }, 220);
+}
+
+/* ---------------- Navigation ---------------- */
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+
+  const track = document.getElementById('progressTrack');
+  const fill = document.getElementById('progressFill');
+  if (id.startsWith('q')) {
+    track.style.display = 'block';
+    const idx = parseInt(id.slice(1), 10);
+    fill.style.width = Math.round(((idx+1) / ALL_QUESTIONS.length) * 100) + '%';
+  } else if (id === 'screen-form') {
+    fill.style.width = '100%';
+    renderHubspotForm();
+  } else {
+    track.style.display = 'none';
+  }
+}
+
+/* ---------------- HubSpot-Formular (eingebettet) ---------------- */
+const HUBSPOT_REGION = 'eu1';
+const HUBSPOT_PORTAL_ID = '149409384';
+const HUBSPOT_FORM_GUID = 'd9f13ac0-424a-4539-b244-9b6ee3b0eb6f';
+
+let hsFormRendered = false;
+let submittedName = '';
+
+function computeType() {
+  let best = TYPE_KEYS[0];
+  TYPE_KEYS.forEach(k => { if (scores[k] > scores[best]) best = k; });
+  return best;
+}
+
+function computeLevel() {
+  if (engagementScore <= 16) return 'einsteiger';
+  if (engagementScore <= 24) return 'unterwegs';
+  return 'fortgeschritten';
+}
+
+const LEVEL_LABELS = { einsteiger: 'Einsteiger:in', unterwegs: 'Auf dem Weg', fortgeschritten: 'Fortgeschritten' };
+
+// Baut die Übersicht, die im CRM im Feld "Quiz Antworten" landet
+function buildSummary() {
+  const typeKey = computeType();
+  const levelKey = computeLevel();
+  const lines = allAnswersText
+    .map((t, i) => t ? `${i + 1}. ${t}` : null)
+    .filter(Boolean);
+  return {
+    typeTitle: TYPES[typeKey].title,
+    text: `Typ: ${TYPES[typeKey].title}\nLevel: ${LEVEL_LABELS[levelKey]} (Score ${engagementScore})\n\nAntworten:\n${lines.join('\n')}`
+  };
+}
+
+function getFormEl($form) {
+  if ($form && $form.jquery) return $form[0];
+  if ($form && $form.querySelector) return $form;
+  return document.querySelector('#hs-form-target form');
+}
+
+function setHiddenField(formEl, name, value) {
+  if (!formEl) return;
+  const el = formEl.querySelector('[name="' + name + '"]');
+  if (!el) { console.warn('Feld nicht im HubSpot-Formular gefunden:', name); return; }
+  el.value = value;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function fillHiddenFields($form) {
+  const formEl = getFormEl($form);
+  const s = buildSummary();
+  setHiddenField(formEl, 'quiz_typ', s.typeTitle);
+  setHiddenField(formEl, 'quiz_antworten', s.text);
+  return formEl;
+}
+
+function renderHubspotForm() {
+  if (hsFormRendered) return;
+  const target = document.getElementById('hs-form-target');
+  if (!window.hbspt || !window.hbspt.forms) {
+    target.innerHTML = '<p class="fine-print">Das Formular konnte nicht geladen werden. Bitte deaktiviere kurz deinen Werbeblocker und lade die Seite neu.</p>';
+    return;
+  }
+  hsFormRendered = true;
+
+  const beforeSubmit = function ($form) {
+    const formEl = fillHiddenFields($form);
+    const nameEl = formEl ? formEl.querySelector('[name="firstname"]') : null;
+    submittedName = nameEl ? nameEl.value.trim() : '';
+  };
+
+  hbspt.forms.create({
+    region: HUBSPOT_REGION,
+    portalId: HUBSPOT_PORTAL_ID,
+    formId: HUBSPOT_FORM_GUID,
+    target: '#hs-form-target',
+    onFormReady: function ($form) { fillHiddenFields($form); },
+    onBeforeFormSubmit: beforeSubmit,
+    onFormSubmit: beforeSubmit,
+    onFormSubmitted: function () { showResult(); }
+  });
+}
+
+function showResult() {
+  const typeKey = computeType();
+  const levelKey = computeLevel();
+  const t = TYPES[typeKey];
+  document.getElementById('resultIcon').textContent = t.icon;
+  document.getElementById('resultKicker').textContent = t.kicker;
+  document.getElementById('resultTitle').textContent = t.title;
+  document.getElementById('resultLine').textContent = t.line;
+  document.getElementById('resultBody').textContent = t.body;
+  document.getElementById('levelLine').textContent = LEVELS[levelKey];
+  document.getElementById('resultNote').textContent = submittedName
+    ? 'Danke, ' + submittedName + '! Wir haben deine Angaben erhalten und melden uns persönlich bei dir.'
+    : 'Danke! Wir haben deine Angaben erhalten und melden uns persönlich bei dir.';
+  document.querySelectorAll('.result-card, .result-kicker').forEach(el => el.style.setProperty('--result-color', t.color));
+  goTo('screen-result');
+}
+</script>
+</body>
+</html>
